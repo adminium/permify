@@ -23,8 +23,8 @@ Permify exposes its APIs via both [gRPC](https://buf.build/permify/permify/docs/
 [SchemaService]: ./api-overview/schema
 [TenancyService]: ./api-overview/tenancy
 
-[go]: https://github.com/Permify/permify-go
-[nodeJS]: https://github.com/Permify/permify-node
+[go]: https://github.com/adminium/permify-go
+[nodeJS]: https://github.com/adminium/permify-node
 
 [![Run in Postman](https://run.pstmn.io/button.svg)](https://www.postman.com/permify-dev/workspace/permify/collection)
 [![View in Swagger](http://jessemillar.github.io/view-in-swagger-button/button.svg)](https://permify.github.io/permify-swagger/)

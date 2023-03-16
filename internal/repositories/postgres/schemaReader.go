@@ -4,15 +4,15 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-
+	
 	"github.com/Masterminds/squirrel"
 	"go.opentelemetry.io/otel/codes"
-
-	"github.com/Permify/permify/internal/repositories"
-	"github.com/Permify/permify/internal/schema"
-	db "github.com/Permify/permify/pkg/database/postgres"
-	"github.com/Permify/permify/pkg/logger"
-	base "github.com/Permify/permify/pkg/pb/base/v1"
+	
+	"github.com/adminium/permify/internal/repositories"
+	"github.com/adminium/permify/internal/schema"
+	db "github.com/adminium/permify/pkg/database/postgres"
+	"github.com/adminium/permify/pkg/logger"
+	base "github.com/adminium/permify/pkg/pb/base/v1"
 )
 
 // SchemaReader - Structure for SchemaReader
@@ -37,19 +37,19 @@ func NewSchemaReader(database *db.Postgres, logger logger.Interface) *SchemaRead
 func (r *SchemaReader) ReadSchema(ctx context.Context, tenantID, version string) (sch *base.SchemaDefinition, err error) {
 	ctx, span := tracer.Start(ctx, "schema-reader.read-schema")
 	defer span.End()
-
+	
 	builder := r.database.Builder.Select("entity_type, serialized_definition, version").From(SchemaDefinitionTable).Where(squirrel.Eq{"version": version, "tenant_id": tenantID})
-
+	
 	var query string
 	var args []interface{}
-
+	
 	query, args, err = builder.ToSql()
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		return nil, errors.New(base.ErrorCode_ERROR_CODE_SQL_BUILDER.String())
 	}
-
+	
 	var rows *sql.Rows
 	rows, err = r.database.DB.QueryContext(ctx, query, args...)
 	if err != nil {
@@ -58,7 +58,7 @@ func (r *SchemaReader) ReadSchema(ctx context.Context, tenantID, version string)
 		return nil, errors.New(base.ErrorCode_ERROR_CODE_EXECUTION.String())
 	}
 	defer rows.Close()
-
+	
 	var definitions []string
 	for rows.Next() {
 		sd := repositories.SchemaDefinition{}
@@ -75,14 +75,14 @@ func (r *SchemaReader) ReadSchema(ctx context.Context, tenantID, version string)
 		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
-
+	
 	sch, err = schema.NewSchemaFromStringDefinitions(true, definitions...)
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
-
+	
 	return sch, err
 }
 
@@ -90,19 +90,19 @@ func (r *SchemaReader) ReadSchema(ctx context.Context, tenantID, version string)
 func (r *SchemaReader) ReadSchemaDefinition(ctx context.Context, tenantID, entityType, version string) (definition *base.EntityDefinition, v string, err error) {
 	ctx, span := tracer.Start(ctx, "schema-reader.read-schema-definition")
 	defer span.End()
-
+	
 	builder := r.database.Builder.Select("entity_type, serialized_definition, version").Where(squirrel.Eq{"entity_type": entityType, "version": version, "tenant_id": tenantID}).From(SchemaDefinitionTable).Limit(1)
-
+	
 	var query string
 	var args []interface{}
-
+	
 	query, args, err = builder.ToSql()
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		return nil, "", errors.New(base.ErrorCode_ERROR_CODE_SQL_BUILDER.String())
 	}
-
+	
 	var def repositories.SchemaDefinition
 	row := r.database.DB.QueryRowContext(ctx, query, args...)
 	if err = row.Err(); err != nil {
@@ -110,7 +110,7 @@ func (r *SchemaReader) ReadSchemaDefinition(ctx context.Context, tenantID, entit
 		span.SetStatus(codes.Error, err.Error())
 		return nil, "", errors.New(base.ErrorCode_ERROR_CODE_EXECUTION.String())
 	}
-
+	
 	if err = row.Scan(&def.EntityType, &def.SerializedDefinition, &def.Version); err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
@@ -119,7 +119,7 @@ func (r *SchemaReader) ReadSchemaDefinition(ctx context.Context, tenantID, entit
 		}
 		return nil, "", errors.New(base.ErrorCode_ERROR_CODE_SCAN.String())
 	}
-
+	
 	var sch *base.SchemaDefinition
 	sch, err = schema.NewSchemaFromStringDefinitions(false, def.Serialized())
 	if err != nil {
@@ -127,7 +127,7 @@ func (r *SchemaReader) ReadSchemaDefinition(ctx context.Context, tenantID, entit
 		span.SetStatus(codes.Error, err.Error())
 		return nil, "", err
 	}
-
+	
 	definition, err = schema.GetEntityByName(sch, entityType)
 	return definition, def.Version, err
 }
@@ -136,7 +136,7 @@ func (r *SchemaReader) ReadSchemaDefinition(ctx context.Context, tenantID, entit
 func (r *SchemaReader) HeadVersion(ctx context.Context, tenantID string) (version string, err error) {
 	ctx, span := tracer.Start(ctx, "schema-reader.head-version")
 	defer span.End()
-
+	
 	var query string
 	var args []interface{}
 	query, args, err = r.database.Builder.
@@ -157,6 +157,6 @@ func (r *SchemaReader) HeadVersion(ctx context.Context, tenantID string) (versio
 		}
 		return "", err
 	}
-
+	
 	return version, nil
 }

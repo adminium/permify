@@ -7,13 +7,13 @@ import (
 	"context"
 	"encoding/json"
 	"syscall/js"
-
+	
 	"google.golang.org/protobuf/encoding/protojson"
-
-	"github.com/Permify/permify/pkg/database"
-	"github.com/Permify/permify/pkg/development"
-	"github.com/Permify/permify/pkg/development/graph"
-	v1 "github.com/Permify/permify/pkg/pb/base/v1"
+	
+	"github.com/adminium/permify/pkg/database"
+	"github.com/adminium/permify/pkg/development"
+	"github.com/adminium/permify/pkg/development/graph"
+	v1 "github.com/adminium/permify/pkg/pb/base/v1"
 )
 
 // Requests for Permify Playground

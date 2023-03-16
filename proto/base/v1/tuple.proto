@@ -1,7 +1,7 @@
 syntax = "proto3";
 package base.v1;
 
-option go_package = "github.com/Permify/permify/pkg/pb/base/v1";
+option go_package = "github.com/adminium/permify/pkg/pb/base/v1";
 
 import "validate/validate.proto";
 import "google/protobuf/timestamp.proto";

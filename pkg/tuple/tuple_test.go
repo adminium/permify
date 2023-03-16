@@ -3,11 +3,11 @@ package tuple
 import (
 	`errors`
 	"testing"
-
+	
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-
-	base "github.com/Permify/permify/pkg/pb/base/v1"
+	
+	base "github.com/adminium/permify/pkg/pb/base/v1"
 )
 
 // TestTuple -
@@ -38,13 +38,13 @@ var _ = Describe("tuple", func() {
 					Relation: "viewer",
 				}, "doc:1#viewer"},
 			}
-
+			
 			for _, tt := range tests {
 				Expect(EntityAndRelationToString(tt.target)).Should(Equal(tt.expected))
 			}
 		})
 	})
-
+	
 	Context("StringToTuple", func() {
 		It("Tuple", func() {
 			tests := []struct {
@@ -101,7 +101,7 @@ var _ = Describe("tuple", func() {
 					err:    ErrInvalidTuple,
 				},
 			}
-
+			
 			for _, tt := range tests {
 				e, err := Tuple(tt.target)
 				if err != nil {
@@ -111,7 +111,7 @@ var _ = Describe("tuple", func() {
 				}
 			}
 		})
-
+		
 		It("EAR", func() {
 			tests := []struct {
 				target   string
@@ -154,7 +154,7 @@ var _ = Describe("tuple", func() {
 					err:      ErrInvalidEntity,
 				},
 			}
-
+			
 			for _, tt := range tests {
 				e, err := EAR(tt.target)
 				if err != nil {
@@ -164,7 +164,7 @@ var _ = Describe("tuple", func() {
 				}
 			}
 		})
-
+		
 		It("E", func() {
 			tests := []struct {
 				target   string
@@ -196,7 +196,7 @@ var _ = Describe("tuple", func() {
 					err:      ErrInvalidEntity,
 				},
 			}
-
+			
 			for _, tt := range tests {
 				e, err := E(tt.target)
 				if err != nil {
@@ -207,7 +207,7 @@ var _ = Describe("tuple", func() {
 			}
 		})
 	})
-
+	
 	Context("Relation", func() {
 		It("SplitRelation", func() {
 			tests := []struct {
@@ -224,12 +224,12 @@ var _ = Describe("tuple", func() {
 					"parent", "parent", "admin",
 				}},
 			}
-
+			
 			for _, tt := range tests {
 				Expect(SplitRelation(tt.target)).Should(Equal(tt.expected))
 			}
 		})
-
+		
 		It("IsRelationComputed", func() {
 			tests := []struct {
 				target   string
@@ -240,13 +240,13 @@ var _ = Describe("tuple", func() {
 				{"parent.parent.admin", false},
 				{"member", true},
 			}
-
+			
 			for _, tt := range tests {
 				Expect(IsRelationComputed(tt.target)).Should(Equal(tt.expected))
 			}
 		})
 	})
-
+	
 	Context("Subject", func() {
 		It("Equals", func() {
 			tests := []struct {
@@ -279,12 +279,12 @@ var _ = Describe("tuple", func() {
 					Relation: "member",
 				}, expected: true},
 			}
-
+			
 			for _, tt := range tests {
 				Expect(AreSubjectsEqual(tt.target, tt.v)).Should(Equal(tt.expected))
 			}
 		})
-
+		
 		It("IsValid", func() {
 			tests := []struct {
 				target   *base.Subject
@@ -331,12 +331,12 @@ var _ = Describe("tuple", func() {
 					expected: true,
 				},
 			}
-
+			
 			for _, tt := range tests {
 				Expect(IsSubjectValid(tt.target)).Should(Equal(tt.expected))
 			}
 		})
-
+		
 		It("ValidateSubjectType", func() {
 			tests := []struct {
 				target        *base.Subject
@@ -402,7 +402,7 @@ var _ = Describe("tuple", func() {
 					expected: errors.New(base.ErrorCode_ERROR_CODE_SUBJECT_TYPE_NOT_FOUND.String()),
 				},
 			}
-
+			
 			for _, tt := range tests {
 				if tt.expected == nil {
 					Expect(ValidateSubjectType(tt.target, tt.relationTypes)).Should(BeNil())

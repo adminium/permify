@@ -2,10 +2,10 @@ package services
 
 import (
 	"context"
-
-	"github.com/Permify/permify/internal/repositories"
-	"github.com/Permify/permify/pkg/database"
-	base "github.com/Permify/permify/pkg/pb/base/v1"
+	
+	"github.com/adminium/permify/internal/repositories"
+	"github.com/adminium/permify/pkg/database"
+	base "github.com/adminium/permify/pkg/pb/base/v1"
 )
 
 // TenancyService -

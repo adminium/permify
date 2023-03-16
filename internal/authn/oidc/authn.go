@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"net/http"
 	"time"
-
+	
 	grpcAuth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"github.com/zitadel/oidc/pkg/client"
 	"github.com/zitadel/oidc/pkg/client/rp"
 	"github.com/zitadel/oidc/pkg/oidc"
-
-	"github.com/Permify/permify/internal/authn"
-	"github.com/Permify/permify/internal/config"
+	
+	"github.com/adminium/permify/internal/authn"
+	"github.com/adminium/permify/internal/config"
 )
 
 // OidcAuthenticator - Interface for oidc authenticator
@@ -34,7 +34,7 @@ func NewOidcAuthn(ctx context.Context, cfg config.Oidc) (*OidcAuthn, error) {
 	remoteKeySet := rp.NewRemoteKeySet(http.DefaultClient, dis.JwksURI)
 	verifier := rp.NewIDTokenVerifier(dis.Issuer, cfg.ClientId, remoteKeySet,
 		rp.WithSupportedSigningAlgorithms(dis.IDTokenSigningAlgValuesSupported...))
-
+	
 	return &OidcAuthn{verifier: verifier}, nil
 }
 
@@ -44,12 +44,12 @@ func (t *OidcAuthn) Authenticate(ctx context.Context) error {
 	if err != nil {
 		return authn.MissingBearerTokenError
 	}
-
+	
 	claims, err := rp.VerifyIDToken(ctx, rawToken, t.verifier)
 	if err != nil {
 		return authn.Unauthenticated
 	}
-
+	
 	if err := t.validateOtherClaims(claims); err != nil {
 		return authn.Unauthenticated
 	}
@@ -71,7 +71,7 @@ func checkNotBefore(claims oidc.IDTokenClaims, offset time.Duration) error {
 	if notBefore.IsZero() {
 		return nil
 	}
-
+	
 	nowWithOffset := time.Now().UTC().Add(offset).Round(time.Second)
 	if nowWithOffset.Before(notBefore) {
 		return fmt.Errorf("token's notBefore date is %s, should be used after that time", notBefore)

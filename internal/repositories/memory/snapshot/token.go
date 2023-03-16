@@ -4,8 +4,8 @@ import (
 	"encoding/base64"
 	"encoding/binary"
 	"time"
-
-	"github.com/Permify/permify/pkg/token"
+	
+	"github.com/adminium/permify/pkg/token"
 )
 
 type (

@@ -2,9 +2,9 @@ package ast
 
 import (
 	"errors"
-
-	base "github.com/Permify/permify/pkg/pb/base/v1"
-	"github.com/Permify/permify/pkg/tuple"
+	
+	base "github.com/adminium/permify/pkg/pb/base/v1"
+	"github.com/adminium/permify/pkg/tuple"
 )
 
 // Validate - validate schema

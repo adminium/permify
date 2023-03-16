@@ -2,12 +2,12 @@ package preshared
 
 import (
 	"context"
-
+	
 	grpcAuth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"github.com/pkg/errors"
-
-	"github.com/Permify/permify/internal/authn"
-	"github.com/Permify/permify/internal/config"
+	
+	"github.com/adminium/permify/internal/authn"
+	"github.com/adminium/permify/internal/config"
 )
 
 // KeyAuthenticator - Interface for key authenticator

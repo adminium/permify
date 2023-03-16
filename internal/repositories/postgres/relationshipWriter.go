@@ -5,18 +5,18 @@ import (
 	"database/sql"
 	"errors"
 	"strings"
-
+	
 	"github.com/Masterminds/squirrel"
 	otelCodes "go.opentelemetry.io/otel/codes"
-
-	"github.com/Permify/permify/internal/repositories/postgres/snapshot"
-	"github.com/Permify/permify/internal/repositories/postgres/types"
-	"github.com/Permify/permify/internal/repositories/postgres/utils"
-	"github.com/Permify/permify/pkg/database"
-	db "github.com/Permify/permify/pkg/database/postgres"
-	"github.com/Permify/permify/pkg/logger"
-	base "github.com/Permify/permify/pkg/pb/base/v1"
-	"github.com/Permify/permify/pkg/token"
+	
+	"github.com/adminium/permify/internal/repositories/postgres/snapshot"
+	"github.com/adminium/permify/internal/repositories/postgres/types"
+	"github.com/adminium/permify/internal/repositories/postgres/utils"
+	"github.com/adminium/permify/pkg/database"
+	db "github.com/adminium/permify/pkg/database/postgres"
+	"github.com/adminium/permify/pkg/logger"
+	base "github.com/adminium/permify/pkg/pb/base/v1"
+	"github.com/adminium/permify/pkg/token"
 )
 
 // RelationshipWriter - Structure for Relationship Writer
@@ -45,11 +45,11 @@ func NewRelationshipWriter(database *db.Postgres, logger logger.Interface) *Rela
 func (w *RelationshipWriter) WriteRelationships(ctx context.Context, tenantID string, collection *database.TupleCollection) (token token.EncodedSnapToken, err error) {
 	ctx, span := tracer.Start(ctx, "relationship-writer.write-relationships")
 	defer span.End()
-
+	
 	if len(collection.GetTuples()) > w.maxTuplesPerWrite {
 		return nil, errors.New("max tuples per write exceeded")
 	}
-
+	
 	for i := 0; i <= w.maxRetries; i++ {
 		var tx *sql.Tx
 		tx, err = w.database.DB.BeginTx(ctx, &w.txOptions)
@@ -58,18 +58,18 @@ func (w *RelationshipWriter) WriteRelationships(ctx context.Context, tenantID st
 			span.SetStatus(otelCodes.Error, err.Error())
 			return nil, err
 		}
-
+		
 		insertBuilder := w.database.Builder.Insert(RelationTuplesTable).Columns("entity_type, entity_id, relation, subject_type, subject_id, subject_relation, tenant_id")
-
+		
 		iter := collection.CreateTupleIterator()
 		for iter.HasNext() {
 			t := iter.GetNext()
 			insertBuilder = insertBuilder.Values(t.GetEntity().GetType(), t.GetEntity().GetId(), t.GetRelation(), t.GetSubject().GetType(), t.GetSubject().GetId(), t.GetSubject().GetRelation(), tenantID)
 		}
-
+		
 		var query string
 		var args []interface{}
-
+		
 		query, args, err = insertBuilder.ToSql()
 		if err != nil {
 			utils.Rollback(tx, w.logger)
@@ -77,7 +77,7 @@ func (w *RelationshipWriter) WriteRelationships(ctx context.Context, tenantID st
 			span.SetStatus(otelCodes.Error, err.Error())
 			return nil, errors.New(base.ErrorCode_ERROR_CODE_SQL_BUILDER.String())
 		}
-
+		
 		_, err = tx.ExecContext(ctx, query, args...)
 		if err != nil {
 			utils.Rollback(tx, w.logger)
@@ -91,7 +91,7 @@ func (w *RelationshipWriter) WriteRelationships(ctx context.Context, tenantID st
 				return nil, errors.New(base.ErrorCode_ERROR_CODE_EXECUTION.String())
 			}
 		}
-
+		
 		transaction := w.database.Builder.Insert("transactions").
 			Columns("tenant_id").
 			Values(tenantID).
@@ -102,7 +102,7 @@ func (w *RelationshipWriter) WriteRelationships(ctx context.Context, tenantID st
 			span.SetStatus(otelCodes.Error, err.Error())
 			return nil, errors.New(base.ErrorCode_ERROR_CODE_SQL_BUILDER.String())
 		}
-
+		
 		var xid types.XID8
 		err = transaction.QueryRowContext(ctx).Scan(&xid)
 		if err != nil {
@@ -111,17 +111,17 @@ func (w *RelationshipWriter) WriteRelationships(ctx context.Context, tenantID st
 			span.SetStatus(otelCodes.Error, err.Error())
 			return nil, errors.New(base.ErrorCode_ERROR_CODE_EXECUTION.String())
 		}
-
+		
 		if err = tx.Commit(); err != nil {
 			utils.Rollback(tx, w.logger)
 			span.RecordError(err)
 			span.SetStatus(otelCodes.Error, err.Error())
 			return nil, errors.New(base.ErrorCode_ERROR_CODE_EXECUTION.String())
 		}
-
+		
 		return snapshot.NewToken(xid).Encode(), nil
 	}
-
+	
 	return nil, errors.New(base.ErrorCode_ERROR_CODE_ERROR_MAX_RETRIES.String())
 }
 
@@ -129,7 +129,7 @@ func (w *RelationshipWriter) WriteRelationships(ctx context.Context, tenantID st
 func (w *RelationshipWriter) DeleteRelationships(ctx context.Context, tenantID string, filter *base.TupleFilter) (token token.EncodedSnapToken, err error) {
 	ctx, span := tracer.Start(ctx, "relationship-writer.delete-relationships")
 	defer span.End()
-
+	
 	for i := 0; i <= w.maxRetries; i++ {
 		var tx *sql.Tx
 		tx, err = w.database.DB.BeginTx(ctx, &w.txOptions)
@@ -138,13 +138,13 @@ func (w *RelationshipWriter) DeleteRelationships(ctx context.Context, tenantID s
 			span.SetStatus(otelCodes.Error, err.Error())
 			return nil, err
 		}
-
+		
 		builder := w.database.Builder.Update(RelationTuplesTable).Set("expired_tx_id", squirrel.Expr("pg_current_xact_id()")).Where(squirrel.Eq{"expired_tx_id": "0"})
 		builder = utils.FilterQueryForUpdateBuilder(builder, filter)
-
+		
 		var query string
 		var args []interface{}
-
+		
 		query, args, err = builder.ToSql()
 		if err != nil {
 			utils.Rollback(tx, w.logger)
@@ -152,7 +152,7 @@ func (w *RelationshipWriter) DeleteRelationships(ctx context.Context, tenantID s
 			span.SetStatus(otelCodes.Error, err.Error())
 			return nil, errors.New(base.ErrorCode_ERROR_CODE_SQL_BUILDER.String())
 		}
-
+		
 		_, err = tx.ExecContext(ctx, query, args...)
 		if err != nil {
 			utils.Rollback(tx, w.logger)
@@ -164,7 +164,7 @@ func (w *RelationshipWriter) DeleteRelationships(ctx context.Context, tenantID s
 				return nil, errors.New(base.ErrorCode_ERROR_CODE_EXECUTION.String())
 			}
 		}
-
+		
 		transaction := w.database.Builder.Insert("transactions").
 			Columns("tenant_id").
 			Values(tenantID).
@@ -175,7 +175,7 @@ func (w *RelationshipWriter) DeleteRelationships(ctx context.Context, tenantID s
 			span.SetStatus(otelCodes.Error, err.Error())
 			return nil, errors.New(base.ErrorCode_ERROR_CODE_SQL_BUILDER.String())
 		}
-
+		
 		var xid types.XID8
 		err = transaction.QueryRowContext(ctx).Scan(&xid)
 		if err != nil {
@@ -184,16 +184,16 @@ func (w *RelationshipWriter) DeleteRelationships(ctx context.Context, tenantID s
 			span.SetStatus(otelCodes.Error, err.Error())
 			return nil, errors.New(base.ErrorCode_ERROR_CODE_EXECUTION.String())
 		}
-
+		
 		if err = tx.Commit(); err != nil {
 			utils.Rollback(tx, w.logger)
 			span.RecordError(err)
 			span.SetStatus(otelCodes.Error, err.Error())
 			return nil, err
 		}
-
+		
 		return snapshot.NewToken(xid).Encode(), nil
 	}
-
+	
 	return nil, errors.New(base.ErrorCode_ERROR_CODE_ERROR_MAX_RETRIES.String())
 }

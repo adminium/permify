@@ -2,11 +2,11 @@ package schema
 
 import (
 	"testing"
-
+	
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-
-	base "github.com/Permify/permify/pkg/pb/base/v1"
+	
+	base "github.com/adminium/permify/pkg/pb/base/v1"
 )
 
 // TestSchema -
@@ -19,24 +19,24 @@ var _ = Describe("schema", func() {
 	Context("NewSchema", func() {
 		It("Case 1", func() {
 			entities := make([]*base.EntityDefinition, 0, 1)
-
+			
 			entities = append(entities, &base.EntityDefinition{
 				Name:       "user",
 				Relations:  map[string]*base.RelationDefinition{},
 				Actions:    map[string]*base.ActionDefinition{},
 				References: map[string]base.EntityDefinition_RelationalReference{},
 			})
-
+			
 			Expect(NewSchemaFromEntityDefinitions(entities...)).To(Equal(&base.SchemaDefinition{
 				EntityDefinitions: map[string]*base.EntityDefinition{
 					"user": entities[0],
 				},
 			}))
 		})
-
+		
 		It("Case 2", func() {
 			entities := make([]*base.EntityDefinition, 0, 2)
-
+			
 			entities = append(entities, &base.EntityDefinition{
 				Name:       "user",
 				Relations:  map[string]*base.RelationDefinition{},
@@ -107,7 +107,7 @@ var _ = Describe("schema", func() {
 					"update": base.EntityDefinition_RELATIONAL_REFERENCE_ACTION,
 				},
 			})
-
+			
 			Expect(NewSchemaFromEntityDefinitions(entities...)).To(Equal(&base.SchemaDefinition{
 				EntityDefinitions: map[string]*base.EntityDefinition{
 					"user":         entities[0],
@@ -115,10 +115,10 @@ var _ = Describe("schema", func() {
 				},
 			}))
 		})
-
+		
 		It("Case 3", func() {
 			entities := make([]*base.EntityDefinition, 0, 3)
-
+			
 			entities = append(entities, &base.EntityDefinition{
 				Name:       "user",
 				Relations:  map[string]*base.RelationDefinition{},
@@ -315,7 +315,7 @@ var _ = Describe("schema", func() {
 					"delete":     base.EntityDefinition_RELATIONAL_REFERENCE_ACTION,
 				},
 			})
-
+			
 			Expect(NewSchemaFromEntityDefinitions(entities...)).To(Equal(&base.SchemaDefinition{
 				EntityDefinitions: map[string]*base.EntityDefinition{
 					"user":         entities[0],

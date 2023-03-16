@@ -4,16 +4,16 @@ import (
 	otelCodes "go.opentelemetry.io/otel/codes"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/status"
-
-	"github.com/Permify/permify/internal/services"
-	"github.com/Permify/permify/pkg/logger"
-	v1 "github.com/Permify/permify/pkg/pb/base/v1"
+	
+	"github.com/adminium/permify/internal/services"
+	"github.com/adminium/permify/pkg/logger"
+	v1 "github.com/adminium/permify/pkg/pb/base/v1"
 )
 
 // PermissionServer - Structure for Permission Server
 type PermissionServer struct {
 	v1.UnimplementedPermissionServer
-
+	
 	permissionService services.IPermissionService
 	logger            logger.Interface
 }
@@ -30,12 +30,12 @@ func NewPermissionServer(p services.IPermissionService, l logger.Interface) *Per
 func (r *PermissionServer) Check(ctx context.Context, request *v1.PermissionCheckRequest) (*v1.PermissionCheckResponse, error) {
 	ctx, span := tracer.Start(ctx, "permissions.check")
 	defer span.End()
-
+	
 	v := request.Validate()
 	if v != nil {
 		return nil, v
 	}
-
+	
 	var err error
 	var response *v1.PermissionCheckResponse
 	response, err = r.permissionService.CheckPermissions(ctx, request)
@@ -45,7 +45,7 @@ func (r *PermissionServer) Check(ctx context.Context, request *v1.PermissionChec
 		r.logger.Error(err.Error())
 		return nil, status.Error(GetStatus(err), err.Error())
 	}
-
+	
 	return response, nil
 }
 
@@ -53,12 +53,12 @@ func (r *PermissionServer) Check(ctx context.Context, request *v1.PermissionChec
 func (r *PermissionServer) Expand(ctx context.Context, request *v1.PermissionExpandRequest) (*v1.PermissionExpandResponse, error) {
 	ctx, span := tracer.Start(ctx, "permissions.expand")
 	defer span.End()
-
+	
 	v := request.Validate()
 	if v != nil {
 		return nil, v
 	}
-
+	
 	var err error
 	var response *v1.PermissionExpandResponse
 	response, err = r.permissionService.ExpandPermissions(ctx, request)
@@ -68,7 +68,7 @@ func (r *PermissionServer) Expand(ctx context.Context, request *v1.PermissionExp
 		r.logger.Error(err.Error())
 		return nil, status.Error(GetStatus(err), err.Error())
 	}
-
+	
 	return response, nil
 }
 
@@ -76,12 +76,12 @@ func (r *PermissionServer) Expand(ctx context.Context, request *v1.PermissionExp
 func (r *PermissionServer) LookupSchema(ctx context.Context, request *v1.PermissionLookupSchemaRequest) (*v1.PermissionLookupSchemaResponse, error) {
 	ctx, span := tracer.Start(ctx, "permissions.lookup-schema")
 	defer span.End()
-
+	
 	v := request.Validate()
 	if v != nil {
 		return nil, v
 	}
-
+	
 	var err error
 	var response *v1.PermissionLookupSchemaResponse
 	response, err = r.permissionService.LookupSchema(ctx, request)
@@ -91,7 +91,7 @@ func (r *PermissionServer) LookupSchema(ctx context.Context, request *v1.Permiss
 		r.logger.Error(err.Error())
 		return nil, status.Error(GetStatus(err), err.Error())
 	}
-
+	
 	return response, nil
 }
 
@@ -99,12 +99,12 @@ func (r *PermissionServer) LookupSchema(ctx context.Context, request *v1.Permiss
 func (r *PermissionServer) LookupEntity(ctx context.Context, request *v1.PermissionLookupEntityRequest) (*v1.PermissionLookupEntityResponse, error) {
 	ctx, span := tracer.Start(ctx, "permissions.lookup-entity")
 	defer span.End()
-
+	
 	v := request.Validate()
 	if v != nil {
 		return nil, v
 	}
-
+	
 	var err error
 	var response *v1.PermissionLookupEntityResponse
 	response, err = r.permissionService.LookupEntity(ctx, request)
@@ -114,7 +114,7 @@ func (r *PermissionServer) LookupEntity(ctx context.Context, request *v1.Permiss
 		r.logger.Error(err.Error())
 		return nil, status.Error(GetStatus(err), err.Error())
 	}
-
+	
 	return response, nil
 }
 
@@ -122,12 +122,12 @@ func (r *PermissionServer) LookupEntity(ctx context.Context, request *v1.Permiss
 func (r *PermissionServer) LookupEntityStream(request *v1.PermissionLookupEntityRequest, server v1.Permission_LookupEntityStreamServer) error {
 	ctx, span := tracer.Start(context.Background(), "permissions.lookup-entity-stream")
 	defer span.End()
-
+	
 	v := request.Validate()
 	if v != nil {
 		return v
 	}
-
+	
 	err := r.permissionService.LookupEntityStream(ctx, request, server)
 	if err != nil {
 		span.RecordError(err)
@@ -135,6 +135,6 @@ func (r *PermissionServer) LookupEntityStream(request *v1.PermissionLookupEntity
 		r.logger.Error(err.Error())
 		return status.Error(GetStatus(err), err.Error())
 	}
-
+	
 	return nil
 }

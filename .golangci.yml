@@ -1,11 +1,11 @@
 linters-settings:
   gci:
-    local-prefixes: github.com/Permify/permify
+    local-prefixes: github.com/adminium/permify
   gosec:
     excludes:
       - 'G404'
   goimports:
-    local-prefixes: 'github.com/Permify/permify'
+    local-prefixes: 'github.com/adminium/permify'
   maligned:
       suggest-new: true
   dupl:

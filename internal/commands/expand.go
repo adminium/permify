@@ -3,15 +3,15 @@ package commands
 import (
 	"context"
 	"errors"
-
+	
 	otelCodes "go.opentelemetry.io/otel/codes"
-
-	"github.com/Permify/permify/internal/repositories"
-	"github.com/Permify/permify/internal/schema"
-	"github.com/Permify/permify/pkg/database"
-	base "github.com/Permify/permify/pkg/pb/base/v1"
-	"github.com/Permify/permify/pkg/token"
-	"github.com/Permify/permify/pkg/tuple"
+	
+	"github.com/adminium/permify/internal/repositories"
+	"github.com/adminium/permify/internal/schema"
+	"github.com/adminium/permify/pkg/database"
+	base "github.com/adminium/permify/pkg/pb/base/v1"
+	"github.com/adminium/permify/pkg/token"
+	"github.com/adminium/permify/pkg/tuple"
 )
 
 // ExpandCommand -
@@ -33,7 +33,7 @@ func NewExpandCommand(sr repositories.SchemaReader, rr repositories.Relationship
 func (command *ExpandCommand) Execute(ctx context.Context, request *base.PermissionExpandRequest) (response *base.PermissionExpandResponse, err error) {
 	ctx, span := tracer.Start(ctx, "permissions.expand.execute")
 	defer span.End()
-
+	
 	if request.GetMetadata().GetSnapToken() == "" {
 		var st token.SnapToken
 		st, err = command.relationshipReader.HeadSnapshot(ctx, request.GetTenantId())
@@ -42,14 +42,14 @@ func (command *ExpandCommand) Execute(ctx context.Context, request *base.Permiss
 		}
 		request.Metadata.SnapToken = st.Encode().String()
 	}
-
+	
 	if request.GetMetadata().GetSchemaVersion() == "" {
 		request.Metadata.SchemaVersion, err = command.schemaReader.HeadVersion(ctx, request.GetTenantId())
 		if err != nil {
 			return response, err
 		}
 	}
-
+	
 	resp := command.expand(ctx, request, false)
 	if resp.Err != nil {
 		span.RecordError(resp.Err)
@@ -76,13 +76,13 @@ func (command *ExpandCommand) expand(ctx context.Context, request *base.Permissi
 	if err != nil {
 		return ExpandResponse{Err: err}
 	}
-
+	
 	var typeOfRelation base.EntityDefinition_RelationalReference
 	typeOfRelation, err = schema.GetTypeOfRelationalReferenceByNameInEntityDefinition(en, request.GetPermission())
 	if err != nil {
 		return ExpandResponse{Err: err}
 	}
-
+	
 	var fn ExpandFunction
 	if typeOfRelation == base.EntityDefinition_RELATIONAL_REFERENCE_ACTION {
 		var child *base.Child
@@ -100,11 +100,11 @@ func (command *ExpandCommand) expand(ctx context.Context, request *base.Permissi
 	} else {
 		fn = command.expandDirect(ctx, request, exclusion)
 	}
-
+	
 	if fn == nil {
 		return ExpandResponse{Err: errors.New(base.ErrorCode_ERROR_CODE_UNDEFINED_CHILD_KIND.String())}
 	}
-
+	
 	return expandRoot(ctx, fn)
 }
 
@@ -145,7 +145,7 @@ func (command *ExpandCommand) setChild(ctx context.Context, request *base.Permis
 			return expandFail(errors.New(base.ErrorCode_ERROR_CODE_UNDEFINED_CHILD_KIND.String()))
 		}
 	}
-
+	
 	return func(ctx context.Context, resultChan chan<- ExpandResponse) {
 		resultChan <- combiner(ctx, functions)
 	}
@@ -167,11 +167,11 @@ func (command *ExpandCommand) expandDirect(ctx context.Context, request *base.Pe
 			expandChan <- expandFailResponse(err)
 			return
 		}
-
+		
 		var expandFunctions []ExpandFunction
-
+		
 		directUserCollection := database.NewSubjectCollection()
-
+		
 		for it.HasNext() {
 			subject := it.GetNext().GetSubject()
 			if !tuple.IsSubjectUser(subject) && subject.GetRelation() != tuple.ELLIPSIS {
@@ -191,12 +191,12 @@ func (command *ExpandCommand) expandDirect(ctx context.Context, request *base.Pe
 				directUserCollection.Add(subject)
 			}
 		}
-
+		
 		target := &base.EntityAndRelation{
 			Entity:   request.GetEntity(),
 			Relation: request.GetPermission(),
 		}
-
+		
 		if len(expandFunctions) == 0 {
 			expandChan <- ExpandResponse{
 				Response: &base.PermissionExpandResponse{
@@ -213,13 +213,13 @@ func (command *ExpandCommand) expandDirect(ctx context.Context, request *base.Pe
 			}
 			return
 		}
-
+		
 		result := expandUnion(ctx, expandFunctions)
 		if result.Err != nil {
 			expandChan <- expandFailResponse(result.Err)
 			return
 		}
-
+		
 		var ex []*base.Expand
 		ex = append(ex, &base.Expand{
 			Node: &base.Expand_Leaf{
@@ -230,7 +230,7 @@ func (command *ExpandCommand) expandDirect(ctx context.Context, request *base.Pe
 				},
 			},
 		})
-
+		
 		result.Response.Tree.GetExpand().Children = ex
 		expandChan <- result
 	}
@@ -240,7 +240,7 @@ func (command *ExpandCommand) expandDirect(ctx context.Context, request *base.Pe
 func (command *ExpandCommand) expandTupleToUserSet(ctx context.Context, request *base.PermissionExpandRequest, ttu *base.TupleToUserSet, exclusion bool) ExpandFunction {
 	return func(ctx context.Context, expandChan chan<- ExpandResponse) {
 		var err error
-
+		
 		var it *database.TupleIterator
 		it, err = command.relationshipReader.QueryRelationships(ctx, request.GetTenantId(), &base.TupleFilter{
 			Entity: &base.EntityFilter{
@@ -252,7 +252,7 @@ func (command *ExpandCommand) expandTupleToUserSet(ctx context.Context, request 
 		if err != nil {
 			expandChan <- expandFailResponse(err)
 		}
-
+		
 		var expandFunctions []ExpandFunction
 		for it.HasNext() {
 			subject := it.GetNext().GetSubject()
@@ -268,7 +268,7 @@ func (command *ExpandCommand) expandTupleToUserSet(ctx context.Context, request 
 				}, ttu.GetComputed(), exclusion))
 			}
 		}
-
+		
 		expandChan <- expandUnion(ctx, expandFunctions)
 	}
 }
@@ -296,7 +296,7 @@ func expandOperation(
 	op base.ExpandTreeNode_Operation,
 ) ExpandResponse {
 	children := make([]*base.Expand, 0, len(functions))
-
+	
 	if len(functions) == 0 {
 		return ExpandResponse{
 			Response: &base.PermissionExpandResponse{
@@ -311,19 +311,19 @@ func expandOperation(
 			},
 		}
 	}
-
+	
 	c, cancel := context.WithCancel(ctx)
 	defer func() {
 		cancel()
 	}()
-
+	
 	results := make([]chan ExpandResponse, 0, len(functions))
 	for _, fn := range functions {
 		fc := make(chan ExpandResponse, 1)
 		results = append(results, fc)
 		go fn(c, fc)
 	}
-
+	
 	for _, result := range results {
 		select {
 		case resp := <-result:
@@ -335,7 +335,7 @@ func expandOperation(
 			return expandFailResponse(errors.New(base.ErrorCode_ERROR_CODE_CANCELLED.String()))
 		}
 	}
-
+	
 	return ExpandResponse{
 		Response: &base.PermissionExpandResponse{
 			Tree: &base.Expand{

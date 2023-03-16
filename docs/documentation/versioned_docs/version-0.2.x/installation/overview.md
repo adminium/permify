@@ -155,7 +155,7 @@ After you completed configuration of your authorization model via Permify Schema
 If your Permify Service running default configurations, authorization data will be stored in memory. 
 :::
 
-If you set up Permify Service from container you can both configure WriteDB with using [configuration yaml file](https://github.com/Permify/permify/blob/master/example.config.yaml) and configuration flags. On the other hand, If you're using brew to install and run Permify you can only use the configuration flags.
+If you set up Permify Service from container you can both configure WriteDB with using [configuration yaml file](https://github.com/adminium/permify/blob/master/example.config.yaml) and configuration flags. On the other hand, If you're using brew to install and run Permify you can only use the configuration flags.
 
 ### Create Relational Tuples
 

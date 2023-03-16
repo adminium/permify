@@ -3,11 +3,11 @@ package decorators
 import (
 	"context"
 	"errors"
-
+	
 	"github.com/afex/hystrix-go/hystrix"
-
-	"github.com/Permify/permify/internal/repositories"
-	base "github.com/Permify/permify/pkg/pb/base/v1"
+	
+	"github.com/adminium/permify/internal/repositories"
+	base "github.com/adminium/permify/pkg/pb/base/v1"
 )
 
 // SchemaWriterWithCircuitBreaker - Add circuit breaker behaviour to schema writer
@@ -25,9 +25,9 @@ func (r *SchemaWriterWithCircuitBreaker) WriteSchema(ctx context.Context, defini
 	type circuitBreakerResponse struct {
 		Error error
 	}
-
+	
 	output := make(chan circuitBreakerResponse, 1)
-
+	
 	hystrix.ConfigureCommand("schemaWriter.writeSchema", hystrix.CommandConfig{Timeout: 1000})
 	bErrors := hystrix.Go("schemaWriter.writeSchema", func() error {
 		err := r.delegate.WriteSchema(ctx, definitions)
@@ -36,7 +36,7 @@ func (r *SchemaWriterWithCircuitBreaker) WriteSchema(ctx context.Context, defini
 	}, func(err error) error {
 		return nil
 	})
-
+	
 	select {
 	case out := <-output:
 		return out.Error

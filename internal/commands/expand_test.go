@@ -2,21 +2,21 @@ package commands
 
 import (
 	"context"
-
+	
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-
-	"github.com/Permify/permify/internal/repositories/mocks"
-	"github.com/Permify/permify/internal/schema"
-	"github.com/Permify/permify/pkg/database"
-	base "github.com/Permify/permify/pkg/pb/base/v1"
-	"github.com/Permify/permify/pkg/token"
-	"github.com/Permify/permify/pkg/tuple"
+	
+	"github.com/adminium/permify/internal/repositories/mocks"
+	"github.com/adminium/permify/internal/schema"
+	"github.com/adminium/permify/pkg/database"
+	base "github.com/adminium/permify/pkg/pb/base/v1"
+	"github.com/adminium/permify/pkg/token"
+	"github.com/adminium/permify/pkg/tuple"
 )
 
 var _ = Describe("expand-command", func() {
 	var expandCommand *ExpandCommand
-
+	
 	// DRIVE SAMPLE
 	driveSchema := `
 	entity user {}
@@ -45,39 +45,39 @@ var _ = Describe("expand-command", func() {
 		action delete = owner or org.admin
 	}
 	`
-
+	
 	Context("Drive Sample: Expand", func() {
 		It("Drive Sample: Case 1", func() {
 			var err error
-
+			
 			// SCHEMA
-
+			
 			schemaReader := new(mocks.SchemaReader)
-
+			
 			var sch *base.SchemaDefinition
 			sch, err = schema.NewSchemaFromStringDefinitions(true, driveSchema)
 			Expect(err).ShouldNot(HaveOccurred())
-
+			
 			var doc *base.EntityDefinition
 			doc, err = schema.GetEntityByName(sch, "doc")
 			Expect(err).ShouldNot(HaveOccurred())
-
+			
 			var folder *base.EntityDefinition
 			folder, err = schema.GetEntityByName(sch, "folder")
 			Expect(err).ShouldNot(HaveOccurred())
-
+			
 			var organization *base.EntityDefinition
 			organization, err = schema.GetEntityByName(sch, "organization")
 			Expect(err).ShouldNot(HaveOccurred())
-
+			
 			schemaReader.On("ReadSchemaDefinition", "t1", "doc", "noop").Return(doc, "noop", nil).Times(2)
 			schemaReader.On("ReadSchemaDefinition", "t1", "folder", "noop").Return(folder, "noop", nil).Times(1)
 			schemaReader.On("ReadSchemaDefinition", "t1", "organization", "noop").Return(organization, "noop", nil).Times(1)
-
+			
 			// RELATIONSHIPS
-
+			
 			relationshipReader := new(mocks.RelationshipReader)
-
+			
 			relationshipReader.On("QueryRelationships", "t1", &base.TupleFilter{
 				Entity: &base.EntityFilter{
 					Type: "doc",
@@ -98,7 +98,7 @@ var _ = Describe("expand-command", func() {
 					},
 				},
 			}...), nil).Times(1)
-
+			
 			relationshipReader.On("QueryRelationships", "t1", &base.TupleFilter{
 				Entity: &base.EntityFilter{
 					Type: "doc",
@@ -119,7 +119,7 @@ var _ = Describe("expand-command", func() {
 					},
 				},
 			}...), nil).Times(1)
-
+			
 			relationshipReader.On("QueryRelationships", "t1", &base.TupleFilter{
 				Entity: &base.EntityFilter{
 					Type: "folder",
@@ -152,7 +152,7 @@ var _ = Describe("expand-command", func() {
 					},
 				},
 			}...), nil).Times(1)
-
+			
 			relationshipReader.On("QueryRelationships", "t1", &base.TupleFilter{
 				Entity: &base.EntityFilter{
 					Type: "doc",
@@ -173,7 +173,7 @@ var _ = Describe("expand-command", func() {
 					},
 				},
 			}...), nil).Times(1)
-
+			
 			relationshipReader.On("QueryRelationships", "t1", &base.TupleFilter{
 				Entity: &base.EntityFilter{
 					Type: "organization",
@@ -194,9 +194,9 @@ var _ = Describe("expand-command", func() {
 					},
 				},
 			}...), nil).Times(1)
-
+			
 			expandCommand = NewExpandCommand(schemaReader, relationshipReader)
-
+			
 			req := &base.PermissionExpandRequest{
 				TenantId:   "t1",
 				Entity:     &base.Entity{Type: "doc", Id: "1"},
@@ -206,13 +206,13 @@ var _ = Describe("expand-command", func() {
 					SchemaVersion: "noop",
 				},
 			}
-
+			
 			var response *base.PermissionExpandResponse
 			response, err = expandCommand.Execute(context.Background(), req)
 			Expect(err).ShouldNot(HaveOccurred())
-
+			
 			// fmt.Println(response.GetTree())
-
+			
 			Expect(&base.Expand{
 				Node: &base.Expand_Expand{
 					Expand: &base.ExpandTreeNode{

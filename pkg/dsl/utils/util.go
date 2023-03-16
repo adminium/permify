@@ -2,9 +2,9 @@ package utils
 
 import (
 	"strings"
-
-	"github.com/Permify/permify/pkg/dsl/ast"
-	"github.com/Permify/permify/pkg/dsl/token"
+	
+	"github.com/adminium/permify/pkg/dsl/ast"
+	"github.com/adminium/permify/pkg/dsl/token"
 )
 
 // GetBaseEntityRelationTypeStatement - get entity reference statement from relation type statements

@@ -4,12 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-
+	
 	"github.com/rs/xid"
-
-	"github.com/Permify/permify/internal/schema"
-	base "github.com/Permify/permify/pkg/pb/base/v1"
-	"github.com/Permify/permify/pkg/tuple"
+	
+	"github.com/adminium/permify/internal/schema"
+	base "github.com/adminium/permify/pkg/pb/base/v1"
+	"github.com/adminium/permify/pkg/tuple"
 )
 
 // SchemaToGraph - Convert schema to graph
@@ -33,7 +33,7 @@ func EntityToGraph(entity *base.EntityDefinition) (g Graph, err error) {
 		Label: entity.GetName(),
 	}
 	g.AddNode(enNode)
-
+	
 	for _, re := range entity.GetRelations() {
 		reNode := &Node{
 			Type:  "relation",
@@ -43,7 +43,7 @@ func EntityToGraph(entity *base.EntityDefinition) (g Graph, err error) {
 		g.AddNode(reNode)
 		g.AddEdge(enNode, reNode, nil)
 	}
-
+	
 	for _, action := range entity.GetActions() {
 		acNode := &Node{
 			Type:  "action",
@@ -72,7 +72,7 @@ func buildActionGraph(entity *base.EntityDefinition, from *Node, children []*bas
 				ID:    xid.New().String(),
 				Label: child.GetRewrite().GetRewriteOperation().String(),
 			}
-
+			
 			g.AddNode(rw)
 			g.AddEdge(from, rw, nil)
 			ag, err := buildActionGraph(entity, rw, child.GetRewrite().GetChildren())

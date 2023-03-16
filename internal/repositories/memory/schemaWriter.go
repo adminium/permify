@@ -3,11 +3,11 @@ package memory
 import (
 	"context"
 	"errors"
-
-	"github.com/Permify/permify/internal/repositories"
-	db "github.com/Permify/permify/pkg/database/memory"
-	"github.com/Permify/permify/pkg/logger"
-	base "github.com/Permify/permify/pkg/pb/base/v1"
+	
+	"github.com/adminium/permify/internal/repositories"
+	db "github.com/adminium/permify/pkg/database/memory"
+	"github.com/adminium/permify/pkg/logger"
+	base "github.com/adminium/permify/pkg/pb/base/v1"
 )
 
 // SchemaWriter - Structure for Schema Writer

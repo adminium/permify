@@ -2,22 +2,22 @@ package commands
 
 import (
 	"context"
-
+	
 	"golang.org/x/exp/slices"
-
+	
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-
-	"github.com/Permify/permify/internal/repositories/mocks"
-	"github.com/Permify/permify/internal/schema"
-	base "github.com/Permify/permify/pkg/pb/base/v1"
+	
+	"github.com/adminium/permify/internal/repositories/mocks"
+	"github.com/adminium/permify/internal/schema"
+	base "github.com/adminium/permify/pkg/pb/base/v1"
 )
 
 var _ = Describe("lookup-schema-command", func() {
 	var lookupSchemaCommand *LookupSchemaCommand
-
+	
 	// DRIVE SAMPLE
-
+	
 	driveSchema := `
 	entity user {}
 	
@@ -45,27 +45,27 @@ var _ = Describe("lookup-schema-command", func() {
 		action delete = owner or org.admin
 	}
 	`
-
+	
 	Context("Drive Sample: Lookup Schema", func() {
 		It("Drive Sample: Case 1", func() {
 			var err error
-
+			
 			// SCHEMA
-
+			
 			schemaReader := new(mocks.SchemaReader)
-
+			
 			var sch *base.SchemaDefinition
 			sch, err = schema.NewSchemaFromStringDefinitions(true, driveSchema)
 			Expect(err).ShouldNot(HaveOccurred())
-
+			
 			var en *base.EntityDefinition
 			en, err = schema.GetEntityByName(sch, "folder")
 			Expect(err).ShouldNot(HaveOccurred())
-
+			
 			schemaReader.On("ReadSchemaDefinition", "t1", "folder", "noop").Return(en, "noop", nil).Times(1)
-
+			
 			lookupSchemaCommand = NewLookupSchemaCommand(schemaReader)
-
+			
 			req := &base.PermissionLookupSchemaRequest{
 				TenantId:      "t1",
 				EntityType:    "folder",
@@ -74,33 +74,33 @@ var _ = Describe("lookup-schema-command", func() {
 					SchemaVersion: "noop",
 				},
 			}
-
+			
 			actualResult, err := lookupSchemaCommand.Execute(context.Background(), req)
 			Expect(err).ShouldNot(HaveOccurred())
 			for _, actionName := range actualResult.ActionNames {
 				Expect(slices.Contains([]string{"delete"}, actionName)).Should(Equal(slices.Contains([]string{"delete"}, actionName)))
 			}
 		})
-
+		
 		It("Drive Sample: Case 2", func() {
 			var err error
-
+			
 			// SCHEMA
-
+			
 			schemaReader := new(mocks.SchemaReader)
-
+			
 			var sch *base.SchemaDefinition
 			sch, err = schema.NewSchemaFromStringDefinitions(true, driveSchema)
 			Expect(err).ShouldNot(HaveOccurred())
-
+			
 			var en *base.EntityDefinition
 			en, err = schema.GetEntityByName(sch, "doc")
 			Expect(err).ShouldNot(HaveOccurred())
-
+			
 			schemaReader.On("ReadSchemaDefinition", "t1", "doc", "noop").Return(en, "noop", nil).Times(2)
-
+			
 			lookupSchemaCommand = NewLookupSchemaCommand(schemaReader)
-
+			
 			req := &base.PermissionLookupSchemaRequest{
 				TenantId:      "t1",
 				EntityType:    "doc",
@@ -109,7 +109,7 @@ var _ = Describe("lookup-schema-command", func() {
 					SchemaVersion: "noop",
 				},
 			}
-
+			
 			actualResult, err := lookupSchemaCommand.Execute(context.Background(), req)
 			Expect(err).ShouldNot(HaveOccurred())
 			for _, actionName := range actualResult.ActionNames {
@@ -117,9 +117,9 @@ var _ = Describe("lookup-schema-command", func() {
 			}
 		})
 	})
-
+	
 	// GITHUB SAMPLE
-
+	
 	githubSchema := `
 		entity user {}
 	
@@ -140,27 +140,27 @@ var _ = Describe("lookup-schema-command", func() {
 		    action delete = parent.member and (parent.admin or owner)
 		}
 		`
-
+	
 	Context("Github Sample: Lookup Schema", func() {
 		It("Github Sample: Case 1", func() {
 			var err error
-
+			
 			// SCHEMA
-
+			
 			schemaReader := new(mocks.SchemaReader)
-
+			
 			var sch *base.SchemaDefinition
 			sch, err = schema.NewSchemaFromStringDefinitions(true, githubSchema)
 			Expect(err).ShouldNot(HaveOccurred())
-
+			
 			var en *base.EntityDefinition
 			en, err = schema.GetEntityByName(sch, "organization")
 			Expect(err).ShouldNot(HaveOccurred())
-
+			
 			schemaReader.On("ReadSchemaDefinition", "t1", "organization", "noop").Return(en, "noop", nil).Times(2)
-
+			
 			lookupSchemaCommand = NewLookupSchemaCommand(schemaReader)
-
+			
 			req := &base.PermissionLookupSchemaRequest{
 				TenantId:      "t1",
 				EntityType:    "organization",
@@ -169,33 +169,33 @@ var _ = Describe("lookup-schema-command", func() {
 					SchemaVersion: "noop",
 				},
 			}
-
+			
 			actualResult, err := lookupSchemaCommand.Execute(context.Background(), req)
 			Expect(err).ShouldNot(HaveOccurred())
 			for _, actionName := range actualResult.ActionNames {
 				Expect(slices.Contains([]string{"create_repository", "delete"}, actionName)).Should(Equal(slices.Contains([]string{"create_repository", "delete"}, actionName)))
 			}
 		})
-
+		
 		It("Github Sample: Case 2", func() {
 			var err error
-
+			
 			// SCHEMA
-
+			
 			schemaReader := new(mocks.SchemaReader)
-
+			
 			var sch *base.SchemaDefinition
 			sch, err = schema.NewSchemaFromStringDefinitions(true, githubSchema)
 			Expect(err).ShouldNot(HaveOccurred())
-
+			
 			var en *base.EntityDefinition
 			en, err = schema.GetEntityByName(sch, "repository")
 			Expect(err).ShouldNot(HaveOccurred())
-
+			
 			schemaReader.On("ReadSchemaDefinition", "t1", "repository", "noop").Return(en, "noop", nil).Times(2)
-
+			
 			lookupSchemaCommand = NewLookupSchemaCommand(schemaReader)
-
+			
 			req := &base.PermissionLookupSchemaRequest{
 				TenantId:      "t1",
 				EntityType:    "repository",
@@ -204,7 +204,7 @@ var _ = Describe("lookup-schema-command", func() {
 					SchemaVersion: "noop",
 				},
 			}
-
+			
 			actualResult, err := lookupSchemaCommand.Execute(context.Background(), req)
 			Expect(err).ShouldNot(HaveOccurred())
 			for _, actionName := range actualResult.ActionNames {

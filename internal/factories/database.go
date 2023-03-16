@@ -2,12 +2,12 @@ package factories
 
 import (
 	"fmt"
-
-	"github.com/Permify/permify/internal/config"
-	"github.com/Permify/permify/internal/repositories/memory/migrations"
-	"github.com/Permify/permify/pkg/database"
-	IMDatabase "github.com/Permify/permify/pkg/database/memory"
-	PQDatabase "github.com/Permify/permify/pkg/database/postgres"
+	
+	"github.com/adminium/permify/internal/config"
+	"github.com/adminium/permify/internal/repositories/memory/migrations"
+	"github.com/adminium/permify/pkg/database"
+	IMDatabase "github.com/adminium/permify/pkg/database/memory"
+	PQDatabase "github.com/adminium/permify/pkg/database/postgres"
 )
 
 // DatabaseFactory - Create database according to given configuration

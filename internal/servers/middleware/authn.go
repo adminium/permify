@@ -2,10 +2,10 @@ package middleware
 
 import (
 	"context"
-
+	
 	grpcAuth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
-
-	"github.com/Permify/permify/internal/authn/preshared"
+	
+	"github.com/adminium/permify/internal/authn/preshared"
 )
 
 // KeyAuthFunc - Middleware that responsible for key authentication

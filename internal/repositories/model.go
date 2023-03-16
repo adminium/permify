@@ -2,10 +2,10 @@ package repositories
 
 import (
 	"time"
-
+	
 	"google.golang.org/protobuf/types/known/timestamppb"
-
-	base "github.com/Permify/permify/pkg/pb/base/v1"
+	
+	base "github.com/adminium/permify/pkg/pb/base/v1"
 )
 
 // RelationTuple - Structure for Relational Tuple

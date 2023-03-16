@@ -3,12 +3,12 @@ package keys
 import (
 	"encoding/hex"
 	"fmt"
-
+	
 	"github.com/cespare/xxhash"
-
-	"github.com/Permify/permify/pkg/cache"
-	base "github.com/Permify/permify/pkg/pb/base/v1"
-	"github.com/Permify/permify/pkg/tuple"
+	
+	"github.com/adminium/permify/pkg/cache"
+	base "github.com/adminium/permify/pkg/pb/base/v1"
+	"github.com/adminium/permify/pkg/tuple"
 )
 
 type CommandKeys struct {

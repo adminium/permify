@@ -2,16 +2,16 @@ package services
 
 import (
 	"context"
-
+	
 	"github.com/rs/xid"
-
+	
 	otelCodes "go.opentelemetry.io/otel/codes"
-
-	"github.com/Permify/permify/internal/repositories"
-	"github.com/Permify/permify/pkg/dsl/ast"
-	"github.com/Permify/permify/pkg/dsl/compiler"
-	"github.com/Permify/permify/pkg/dsl/parser"
-	base "github.com/Permify/permify/pkg/pb/base/v1"
+	
+	"github.com/adminium/permify/internal/repositories"
+	"github.com/adminium/permify/pkg/dsl/ast"
+	"github.com/adminium/permify/pkg/dsl/compiler"
+	"github.com/adminium/permify/pkg/dsl/parser"
+	base "github.com/adminium/permify/pkg/pb/base/v1"
 )
 
 // SchemaService -
@@ -33,7 +33,7 @@ func NewSchemaService(sw repositories.SchemaWriter, sr repositories.SchemaReader
 func (service *SchemaService) ReadSchema(ctx context.Context, tenantID, version string) (response *base.SchemaDefinition, err error) {
 	ctx, span := tracer.Start(ctx, "schemas.read")
 	defer span.End()
-
+	
 	if version == "" {
 		var ver string
 		ver, err = service.sr.HeadVersion(ctx, tenantID)
@@ -42,7 +42,7 @@ func (service *SchemaService) ReadSchema(ctx context.Context, tenantID, version 
 		}
 		version = ver
 	}
-
+	
 	return service.sr.ReadSchema(ctx, tenantID, version)
 }
 
@@ -50,23 +50,23 @@ func (service *SchemaService) ReadSchema(ctx context.Context, tenantID, version 
 func (service *SchemaService) WriteSchema(ctx context.Context, tenantID, schema string) (response string, err error) {
 	ctx, span := tracer.Start(ctx, "schemas.write")
 	defer span.End()
-
+	
 	sch, err := parser.NewParser(schema).Parse()
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(otelCodes.Error, err.Error())
 		return "", err
 	}
-
+	
 	_, err = compiler.NewCompiler(false, sch).Compile()
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(otelCodes.Error, err.Error())
 		return "", err
 	}
-
+	
 	version := xid.New().String()
-
+	
 	cnf := make([]repositories.SchemaDefinition, 0, len(sch.Statements))
 	for _, st := range sch.Statements {
 		cnf = append(cnf, repositories.SchemaDefinition{
@@ -76,7 +76,7 @@ func (service *SchemaService) WriteSchema(ctx context.Context, tenantID, schema 
 			SerializedDefinition: []byte(st.String()),
 		})
 	}
-
+	
 	err = service.sw.WriteSchema(ctx, cnf)
 	if err != nil {
 		return "", err

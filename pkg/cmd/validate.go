@@ -5,15 +5,15 @@ import (
 	"fmt"
 	"net/url"
 	"os"
-
+	
 	"github.com/gookit/color"
 	"github.com/spf13/cobra"
-
-	"github.com/Permify/permify/pkg/development"
-	"github.com/Permify/permify/pkg/development/validation"
-	base "github.com/Permify/permify/pkg/pb/base/v1"
-	"github.com/Permify/permify/pkg/token"
-	"github.com/Permify/permify/pkg/tuple"
+	
+	"github.com/adminium/permify/pkg/development"
+	"github.com/adminium/permify/pkg/development/validation"
+	base "github.com/adminium/permify/pkg/pb/base/v1"
+	"github.com/adminium/permify/pkg/token"
+	"github.com/adminium/permify/pkg/tuple"
 )
 
 // NewValidateCommand - Creates new validate command
@@ -31,34 +31,34 @@ func validate() func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 		devContainer := development.NewContainer()
-
+		
 		u, err := url.Parse(args[0])
 		if err != nil {
 			return err
 		}
-
+		
 		decoder, err := validation.NewDecoderFromURL(u)
 		if err != nil {
 			return err
 		}
-
+		
 		s := &validation.Shape{}
 		err = decoder.Decode(s)
 		if err != nil {
 			return err
 		}
-
+		
 		// Write schema -
 		var version string
 		version, err = devContainer.S.WriteSchema(ctx, "t1", s.Schema)
 		if err != nil {
 			return err
 		}
-
+		
 		color.Success.Println("schema successfully created: ✓ ✅ ")
-
+		
 		var tuples []*base.Tuple
-
+		
 		// Write tuples -
 		for _, t := range s.Tuples {
 			var tup *base.Tuple
@@ -68,15 +68,15 @@ func validate() func(cmd *cobra.Command, args []string) error {
 			}
 			tuples = append(tuples, tup)
 		}
-
+		
 		_, err = devContainer.R.WriteRelationships(ctx, "t1", tuples, version)
 		if err != nil {
 			return err
 		}
-
+		
 		color.Success.Println("tuples successfully created: ✓ ✅ ")
 		color.Success.Println("checking assertions...")
-
+		
 		// Check Assertions
 		for i, assertion := range s.Assertions {
 			for query, expected := range assertion {
@@ -84,12 +84,12 @@ func validate() func(cmd *cobra.Command, args []string) error {
 				if !expected {
 					exp = base.PermissionCheckResponse_RESULT_DENIED
 				}
-
+				
 				q, err := tuple.NewQueryFromString(query)
 				if err != nil {
 					return err
 				}
-
+				
 				res, err := devContainer.P.CheckPermissions(ctx, &base.PermissionCheckRequest{
 					TenantId: "t1",
 					Metadata: &base.PermissionCheckRequestMetadata{
@@ -104,7 +104,7 @@ func validate() func(cmd *cobra.Command, args []string) error {
 				if err != nil {
 					return err
 				}
-
+				
 				if res.Can == exp {
 					fmt.Printf("%v. %s ? => ", i+1, query)
 					if res.Can == base.PermissionCheckResponse_RESULT_ALLOWED {
@@ -124,7 +124,7 @@ func validate() func(cmd *cobra.Command, args []string) error {
 				}
 			}
 		}
-
+		
 		return nil
 	}
 }

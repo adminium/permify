@@ -9,7 +9,7 @@ An authorization service is a module that allows you to manage access to your ap
 
 [Permify] is a fully open source authorization service that offers a variety of binding and crafting options to secure your applications.
 
-[Permify]: https://github.com/Permify/permify
+[Permify]: https://github.com/adminium/permify
 
 ## Why should I use Authorization Service instead of doing from scratch?
 

@@ -2,8 +2,8 @@ package ast
 
 import (
 	"strings"
-
-	"github.com/Permify/permify/pkg/dsl/token"
+	
+	"github.com/adminium/permify/pkg/dsl/token"
 )
 
 type (
@@ -20,10 +20,10 @@ func (o Operator) String() string {
 const (
 	IDENTIFIER ExpressionType = "identifier"
 	INFLIX     ExpressionType = "inflix"
-
+	
 	AND Operator = "and"
 	OR  Operator = "or"
-
+	
 	ACTION   RelationalReferenceType = "action"
 	RELATION RelationalReferenceType = "relation"
 )
@@ -66,19 +66,19 @@ func (ls *EntityStatement) String() string {
 	sb.WriteString(ls.Name.Literal)
 	sb.WriteString(" {")
 	sb.WriteString("\n")
-
+	
 	for _, rs := range ls.RelationStatements {
 		sb.WriteString(rs.String())
 		sb.WriteString("\n")
 	}
-
+	
 	sb.WriteString("\n")
-
+	
 	for _, rs := range ls.ActionStatements {
 		sb.WriteString(rs.String())
 		sb.WriteString("\n")
 	}
-
+	
 	sb.WriteString("}")
 	sb.WriteString(" ")
 	sb.WriteString("\n")
@@ -103,12 +103,12 @@ func (ls *RelationStatement) String() string {
 	sb.WriteString(" ")
 	sb.WriteString(ls.Name.Literal)
 	sb.WriteString(" ")
-
+	
 	for _, rs := range ls.RelationTypes {
 		sb.WriteString(rs.String())
 		sb.WriteString(" ")
 	}
-
+	
 	return sb.String()
 }
 

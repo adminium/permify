@@ -1,13 +1,13 @@
 package factories
 
 import (
-	"github.com/Permify/permify/internal/repositories"
-	MMRepository "github.com/Permify/permify/internal/repositories/memory"
-	PQRepository "github.com/Permify/permify/internal/repositories/postgres"
-	"github.com/Permify/permify/pkg/database"
-	MMDatabase "github.com/Permify/permify/pkg/database/memory"
-	PQDatabase "github.com/Permify/permify/pkg/database/postgres"
-	"github.com/Permify/permify/pkg/logger"
+	"github.com/adminium/permify/internal/repositories"
+	MMRepository "github.com/adminium/permify/internal/repositories/memory"
+	PQRepository "github.com/adminium/permify/internal/repositories/postgres"
+	"github.com/adminium/permify/pkg/database"
+	MMDatabase "github.com/adminium/permify/pkg/database/memory"
+	PQDatabase "github.com/adminium/permify/pkg/database/postgres"
+	"github.com/adminium/permify/pkg/logger"
 )
 
 // RelationshipReaderFactory - Return relationship read operations according to given database interface

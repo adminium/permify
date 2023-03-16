@@ -5,10 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
-
-	"github.com/Permify/permify/internal/repositories"
-	"github.com/Permify/permify/pkg/cache"
-	base "github.com/Permify/permify/pkg/pb/base/v1"
+	
+	"github.com/adminium/permify/internal/repositories"
+	"github.com/adminium/permify/pkg/cache"
+	base "github.com/adminium/permify/pkg/pb/base/v1"
 )
 
 // SchemaReaderWithCache - Add cache behaviour to schema reader

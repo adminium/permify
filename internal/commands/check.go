@@ -4,19 +4,19 @@ import (
 	"context"
 	"errors"
 	"sync"
-
+	
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/metric/instrument"
-
+	
 	otelCodes "go.opentelemetry.io/otel/codes"
-
-	"github.com/Permify/permify/internal/keys"
-	"github.com/Permify/permify/internal/repositories"
-	"github.com/Permify/permify/internal/schema"
-	"github.com/Permify/permify/pkg/database"
-	base "github.com/Permify/permify/pkg/pb/base/v1"
-	"github.com/Permify/permify/pkg/token"
-	"github.com/Permify/permify/pkg/tuple"
+	
+	"github.com/adminium/permify/internal/keys"
+	"github.com/adminium/permify/internal/repositories"
+	"github.com/adminium/permify/internal/schema"
+	"github.com/adminium/permify/pkg/database"
+	base "github.com/adminium/permify/pkg/pb/base/v1"
+	"github.com/adminium/permify/pkg/token"
+	"github.com/adminium/permify/pkg/tuple"
 )
 
 // CheckCommand -
@@ -41,22 +41,22 @@ func NewCheckCommand(km keys.CommandKeyManager, sr repositories.SchemaReader, rr
 		relationshipReader: rr,
 		concurrencyLimit:   _defaultConcurrencyLimit,
 	}
-
+	
 	// options
 	for _, opt := range opts {
 		opt(command)
 	}
-
+	
 	checkExecutionCounter, err := m.Int64Counter("check_execution_count", instrument.WithDescription("check execution count"))
 	if err != nil {
 		return nil, err
 	}
-
+	
 	cachedCheckExecutionCounter, err := m.Int64Counter("cached_check_execution_count", instrument.WithDescription("cached check execution count"))
 	if err != nil {
 		return nil, err
 	}
-
+	
 	command.executionCounter = checkExecutionCounter
 	command.cachedExecutionCounter = cachedCheckExecutionCounter
 	return command, nil
@@ -69,13 +69,13 @@ func NewCheckCommand(km keys.CommandKeyManager, sr repositories.SchemaReader, rr
 func (command *CheckCommand) Execute(ctx context.Context, request *base.PermissionCheckRequest) (response *base.PermissionCheckResponse, err error) {
 	ctx, span := tracer.Start(ctx, "permissions.check.execute")
 	defer span.End()
-
+	
 	command.executionCounter.Add(ctx, 1)
-
+	
 	emptyResp := denied(&base.PermissionCheckResponseMetadata{
 		CheckCount: 0,
 	})
-
+	
 	if request.GetMetadata().GetSnapToken() == "" {
 		var st token.SnapToken
 		st, err = command.relationshipReader.HeadSnapshot(ctx, request.GetTenantId())
@@ -84,7 +84,7 @@ func (command *CheckCommand) Execute(ctx context.Context, request *base.Permissi
 		}
 		request.Metadata.SnapToken = st.Encode().String()
 	}
-
+	
 	if request.GetMetadata().GetSchemaVersion() == "" {
 		request.Metadata.SchemaVersion, err = command.schemaReader.HeadVersion(ctx, request.GetTenantId())
 		if err != nil {
@@ -93,12 +93,12 @@ func (command *CheckCommand) Execute(ctx context.Context, request *base.Permissi
 			return emptyResp, err
 		}
 	}
-
+	
 	err = checkDepth(request)
 	if err != nil {
 		return emptyResp, err
 	}
-
+	
 	var en *base.EntityDefinition
 	en, _, err = command.schemaReader.ReadSchemaDefinition(ctx, request.GetTenantId(), request.GetEntity().GetType(), request.GetMetadata().GetSchemaVersion())
 	if err != nil {
@@ -106,7 +106,7 @@ func (command *CheckCommand) Execute(ctx context.Context, request *base.Permissi
 		span.SetStatus(otelCodes.Error, err.Error())
 		return emptyResp, err
 	}
-
+	
 	var tor base.EntityDefinition_RelationalReference
 	tor, err = schema.GetTypeOfRelationalReferenceByNameInEntityDefinition(en, request.GetPermission())
 	if err != nil {
@@ -114,7 +114,7 @@ func (command *CheckCommand) Execute(ctx context.Context, request *base.Permissi
 		span.SetStatus(otelCodes.Error, err.Error())
 		return emptyResp, err
 	}
-
+	
 	if tor != base.EntityDefinition_RELATIONAL_REFERENCE_ACTION {
 		res, found := command.commandKeyManager.GetCheckKey(request)
 		if found {
@@ -131,13 +131,13 @@ func (command *CheckCommand) Execute(ctx context.Context, request *base.Permissi
 			}, nil
 		}
 	}
-
+	
 	var res *base.PermissionCheckResponse
 	res, err = command.check(ctx, request, tor, en)(ctx)
 	if err != nil {
 		return emptyResp, err
 	}
-
+	
 	if tor != base.EntityDefinition_RELATIONAL_REFERENCE_ACTION {
 		res.Metadata = increaseCheckCount(res.Metadata)
 		command.commandKeyManager.SetCheckKey(request, &base.PermissionCheckResponse{
@@ -151,7 +151,7 @@ func (command *CheckCommand) Execute(ctx context.Context, request *base.Permissi
 			return allowed(res.Metadata), nil
 		}
 	}
-
+	
 	return &base.PermissionCheckResponse{
 		Can:      res.Can,
 		Metadata: res.Metadata,
@@ -191,11 +191,11 @@ func (command *CheckCommand) check(ctx context.Context, request *base.Permission
 	} else {
 		fn = command.checkDirect(ctx, request)
 	}
-
+	
 	if fn == nil {
 		return checkFail(errors.New(base.ErrorCode_ERROR_CODE_UNDEFINED_CHILD_KIND.String()))
 	}
-
+	
 	return func(ctx context.Context) (*base.PermissionCheckResponse, error) {
 		return checkUnion(ctx, []CheckFunction{fn}, command.concurrencyLimit)
 	}
@@ -238,7 +238,7 @@ func (command *CheckCommand) setChild(ctx context.Context, request *base.Permiss
 			return checkFail(errors.New(base.ErrorCode_ERROR_CODE_UNDEFINED_CHILD_TYPE.String()))
 		}
 	}
-
+	
 	return func(ctx context.Context) (*base.PermissionCheckResponse, error) {
 		return combiner(ctx, functions, command.concurrencyLimit)
 	}
@@ -258,7 +258,7 @@ func (command *CheckCommand) checkDirect(ctx context.Context, request *base.Perm
 		if err != nil {
 			return denied(&base.PermissionCheckResponseMetadata{}), err
 		}
-
+		
 		var checkFunctions []CheckFunction
 		for it.HasNext() {
 			subject := it.GetNext().GetSubject()
@@ -285,11 +285,11 @@ func (command *CheckCommand) checkDirect(ctx context.Context, request *base.Perm
 				}))
 			}
 		}
-
+		
 		if len(checkFunctions) > 0 {
 			return checkUnion(ctx, checkFunctions, command.concurrencyLimit)
 		}
-
+		
 		result = denied(&base.PermissionCheckResponseMetadata{})
 		command.commandKeyManager.SetCheckKey(request, result)
 		return
@@ -311,7 +311,7 @@ func (command *CheckCommand) checkTupleToUserSet(ctx context.Context, request *b
 		if err != nil {
 			return denied(&base.PermissionCheckResponseMetadata{}), err
 		}
-
+		
 		var checkFunctions []CheckFunction
 		for it.HasNext() {
 			subject := it.GetNext().GetSubject()
@@ -326,7 +326,7 @@ func (command *CheckCommand) checkTupleToUserSet(ctx context.Context, request *b
 				Metadata:   request.GetMetadata(),
 			}, ttu.GetComputed(), exclusion))
 		}
-
+		
 		return checkUnion(ctx, checkFunctions, command.concurrencyLimit)
 	}
 }
@@ -353,25 +353,25 @@ func (command *CheckCommand) checkComputedUserSet(ctx context.Context, request *
 // checkUnion -
 func checkUnion(ctx context.Context, functions []CheckFunction, limit int) (*base.PermissionCheckResponse, error) {
 	responseMetadata := &base.PermissionCheckResponseMetadata{}
-
+	
 	if len(functions) == 0 {
 		return &base.PermissionCheckResponse{
 			Can:      base.PermissionCheckResponse_RESULT_DENIED,
 			Metadata: responseMetadata,
 		}, nil
 	}
-
+	
 	decisionChan := make(chan CheckResponse, len(functions))
 	cancelCtx, cancel := context.WithCancel(ctx)
-
+	
 	clean := run(cancelCtx, functions, decisionChan, limit)
-
+	
 	defer func() {
 		cancel()
 		clean()
 		close(decisionChan)
 	}()
-
+	
 	for i := 0; i < len(functions); i++ {
 		select {
 		case d := <-decisionChan:
@@ -386,29 +386,29 @@ func checkUnion(ctx context.Context, functions []CheckFunction, limit int) (*bas
 			return denied(responseMetadata), errors.New(base.ErrorCode_ERROR_CODE_CANCELLED.String())
 		}
 	}
-
+	
 	return denied(responseMetadata), nil
 }
 
 // checkIntersection -
 func checkIntersection(ctx context.Context, functions []CheckFunction, limit int) (*base.PermissionCheckResponse, error) {
 	responseMetadata := &base.PermissionCheckResponseMetadata{}
-
+	
 	if len(functions) == 0 {
 		return denied(responseMetadata), nil
 	}
-
+	
 	decisionChan := make(chan CheckResponse, len(functions))
 	cancelCtx, cancel := context.WithCancel(ctx)
-
+	
 	clean := run(cancelCtx, functions, decisionChan, limit)
-
+	
 	defer func() {
 		cancel()
 		clean()
 		close(decisionChan)
 	}()
-
+	
 	for i := 0; i < len(functions); i++ {
 		select {
 		case d := <-decisionChan:
@@ -423,7 +423,7 @@ func checkIntersection(ctx context.Context, functions []CheckFunction, limit int
 			return denied(responseMetadata), errors.New(base.ErrorCode_ERROR_CODE_CANCELLED.String())
 		}
 	}
-
+	
 	return allowed(responseMetadata), nil
 }
 
@@ -431,7 +431,7 @@ func checkIntersection(ctx context.Context, functions []CheckFunction, limit int
 func run(ctx context.Context, functions []CheckFunction, decisionChan chan<- CheckResponse, limit int) func() {
 	cl := make(chan struct{}, limit)
 	var wg sync.WaitGroup
-
+	
 	check := func(child CheckFunction) {
 		result, err := child(ctx)
 		decisionChan <- CheckResponse{
@@ -441,7 +441,7 @@ func run(ctx context.Context, functions []CheckFunction, decisionChan chan<- Che
 		<-cl
 		wg.Done()
 	}
-
+	
 	wg.Add(1)
 	go func() {
 	run:
@@ -457,7 +457,7 @@ func run(ctx context.Context, functions []CheckFunction, decisionChan chan<- Che
 		}
 		wg.Done()
 	}()
-
+	
 	return func() {
 		wg.Wait()
 		close(cl)

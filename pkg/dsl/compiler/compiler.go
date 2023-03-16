@@ -2,10 +2,10 @@ package compiler
 
 import (
 	"errors"
-
-	"github.com/Permify/permify/pkg/dsl/ast"
-	"github.com/Permify/permify/pkg/dsl/utils"
-	base "github.com/Permify/permify/pkg/pb/base/v1"
+	
+	"github.com/adminium/permify/pkg/dsl/ast"
+	"github.com/adminium/permify/pkg/dsl/utils"
+	base "github.com/adminium/permify/pkg/pb/base/v1"
 )
 
 // Compiler -
@@ -30,7 +30,7 @@ func (t *Compiler) Compile() (sch []*base.EntityDefinition, err error) {
 			return nil, err
 		}
 	}
-
+	
 	entities := make([]*base.EntityDefinition, 0, len(t.schema.Statements))
 	for _, sc := range t.schema.Statements {
 		var en *base.EntityDefinition
@@ -44,7 +44,7 @@ func (t *Compiler) Compile() (sch []*base.EntityDefinition, err error) {
 		}
 		entities = append(entities, en)
 	}
-
+	
 	return entities, err
 }
 
@@ -56,7 +56,7 @@ func (t *Compiler) compile(sc *ast.EntityStatement) (*base.EntityDefinition, err
 		Actions:    map[string]*base.ActionDefinition{},
 		References: map[string]base.EntityDefinition_RelationalReference{},
 	}
-
+	
 	// relations
 	for _, rs := range sc.RelationStatements {
 		relationSt, okRs := rs.(*ast.RelationStatement)
@@ -67,18 +67,18 @@ func (t *Compiler) compile(sc *ast.EntityStatement) (*base.EntityDefinition, err
 			Name:               relationSt.Name.Literal,
 			RelationReferences: []*base.RelationReference{},
 		}
-
+		
 		for _, rts := range relationSt.RelationTypes {
 			relationDefinition.RelationReferences = append(relationDefinition.RelationReferences, &base.RelationReference{
 				Type:     rts.Type.Literal,
 				Relation: rts.Relation.Literal,
 			})
 		}
-
+		
 		entityDefinition.Relations[relationDefinition.GetName()] = relationDefinition
 		entityDefinition.References[relationDefinition.GetName()] = base.EntityDefinition_RELATIONAL_REFERENCE_RELATION
 	}
-
+	
 	// actions
 	for _, as := range sc.ActionStatements {
 		st, okAs := as.(*ast.ActionStatement)
@@ -96,7 +96,7 @@ func (t *Compiler) compile(sc *ast.EntityStatement) (*base.EntityDefinition, err
 		entityDefinition.Actions[actionDefinition.GetName()] = actionDefinition
 		entityDefinition.References[actionDefinition.GetName()] = base.EntityDefinition_RELATIONAL_REFERENCE_ACTION
 	}
-
+	
 	return entityDefinition, nil
 }
 
@@ -116,10 +116,10 @@ func (t *Compiler) compileChildren(entityName string, expression ast.Expression)
 // compileRewrite -
 func (t *Compiler) compileRewrite(entityName string, exp *ast.InfixExpression) (*base.Child, error) {
 	var err error
-
+	
 	child := &base.Child{}
 	rewrite := &base.Rewrite{}
-
+	
 	switch exp.Operator {
 	case ast.OR:
 		rewrite.RewriteOperation = base.Rewrite_OPERATION_UNION
@@ -128,23 +128,23 @@ func (t *Compiler) compileRewrite(entityName string, exp *ast.InfixExpression) (
 	default:
 		rewrite.RewriteOperation = base.Rewrite_OPERATION_UNSPECIFIED
 	}
-
+	
 	var ch []*base.Child
-
+	
 	var leftChild *base.Child
 	leftChild, err = t.compileChildren(entityName, exp.Left)
 	if err != nil {
 		return nil, err
 	}
-
+	
 	var rightChild *base.Child
 	rightChild, err = t.compileChildren(entityName, exp.Right)
 	if err != nil {
 		return nil, err
 	}
-
+	
 	ch = append(ch, []*base.Child{leftChild, rightChild}...)
-
+	
 	rewrite.Children = ch
 	child.Type = &base.Child_Rewrite{Rewrite: rewrite}
 	child.GetRewrite().Children = ch
@@ -154,31 +154,31 @@ func (t *Compiler) compileRewrite(entityName string, exp *ast.InfixExpression) (
 // compileLeaf -
 func (t *Compiler) compileLeaf(entityName string, expression ast.Expression) (*base.Child, error) {
 	child := &base.Child{}
-
+	
 	var ident *ast.Identifier
 	if expression.GetType() == ast.IDENTIFIER {
 		ident = expression.(*ast.Identifier)
 	} else {
 		return nil, errors.New(base.ErrorCode_ERROR_CODE_RELATION_DEFINITION_NOT_FOUND.String())
 	}
-
+	
 	if len(ident.Idents) == 1 {
 		if !t.withoutReferenceValidation {
 			if !t.schema.IsRelationalReferenceExist(utils.Key(entityName, ident.Idents[0].Literal)) {
 				return nil, errors.New(base.ErrorCode_ERROR_CODE_UNDEFINED_RELATION_REFERENCE.String())
 			}
 		}
-
+		
 		leaf, err := t.compileComputedUserSetIdentifier(ident.Idents[0].Literal)
 		if err != nil {
 			return nil, errors.New(base.ErrorCode_ERROR_CODE_SCHEMA_COMPILE.String())
 		}
-
+		
 		leaf.Exclusion = ident.IsPrefix()
 		child.Type = &base.Child_Leaf{Leaf: leaf}
 		return child, nil
 	}
-
+	
 	if len(ident.Idents) == 2 {
 		if !t.withoutReferenceValidation {
 			types, exist := t.schema.GetRelationReferenceIfExist(utils.Key(entityName, ident.Idents[0].Literal))
@@ -189,17 +189,17 @@ func (t *Compiler) compileLeaf(entityName string, expression ast.Expression) (*b
 				return nil, errors.New(base.ErrorCode_ERROR_CODE_UNDEFINED_RELATION_REFERENCE.String())
 			}
 		}
-
+		
 		leaf, err := t.compileTupleToUserSetIdentifier(ident.Idents[0].Literal, ident.Idents[1].Literal)
 		if err != nil {
 			return nil, errors.New(base.ErrorCode_ERROR_CODE_SCHEMA_COMPILE.String())
 		}
-
+		
 		leaf.Exclusion = ident.IsPrefix()
 		child.Type = &base.Child_Leaf{Leaf: leaf}
 		return child, nil
 	}
-
+	
 	return nil, errors.New(base.ErrorCode_ERROR_CODE_NOT_SUPPORTED_RELATION_WALK.String())
 }
 

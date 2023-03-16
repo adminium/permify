@@ -2,11 +2,11 @@ package servers
 
 import (
 	"context"
-
+	
 	"google.golang.org/protobuf/types/known/emptypb"
-
-	"github.com/Permify/permify/internal"
-	v1 "github.com/Permify/permify/pkg/pb/base/v1"
+	
+	"github.com/adminium/permify/internal"
+	v1 "github.com/adminium/permify/pkg/pb/base/v1"
 )
 
 // WelcomeServer - Structure for Welcome Server

@@ -5,7 +5,7 @@ slug: /
 
 # What is Permify?
 
-[Permify](https://github.com/Permify/permify) is an **open-source authorization service** for creating and maintaining fine-grained authorizations in your applications.
+[Permify](https://github.com/adminium/permify) is an **open-source authorization service** for creating and maintaining fine-grained authorizations in your applications.
 
 With Permify you can easily structure your authorization model, store authorization data in your own servers securely, and interact with Permify API to handle all authorization questions from any of your applications.
 
@@ -78,9 +78,9 @@ We love to talk about authorization also we would love to hear from you :heart:
 
 You can get immediate help on our [Discord](https://discord.gg/MJbUjwskdH) channel. This can be any kind of questions related to Permify, authorization, or even from authentication or identity access control. We'd love to discuss anything related with access control space.
 
-For feature requests, bugs or any improvements you can always open an [issue] on Github. If you like Permify, please consider giving us a :star:️ on [Github](https://github.com/Permify/permify)
+For feature requests, bugs or any improvements you can always open an [issue] on Github. If you like Permify, please consider giving us a :star:️ on [Github](https://github.com/adminium/permify)
 
-[issue]: https://github.com/Permify/permify/issues
+[issue]: https://github.com/adminium/permify/issues
 
 <h3 align="left">Let's get connected</h3>
 

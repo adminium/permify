@@ -3,14 +3,14 @@ package memory
 import (
 	"context"
 	"errors"
-
+	
 	"github.com/hashicorp/go-memdb"
-
-	"github.com/Permify/permify/internal/repositories"
-	"github.com/Permify/permify/internal/schema"
-	db "github.com/Permify/permify/pkg/database/memory"
-	"github.com/Permify/permify/pkg/logger"
-	base "github.com/Permify/permify/pkg/pb/base/v1"
+	
+	"github.com/adminium/permify/internal/repositories"
+	"github.com/adminium/permify/internal/schema"
+	db "github.com/adminium/permify/pkg/database/memory"
+	"github.com/adminium/permify/pkg/logger"
+	base "github.com/adminium/permify/pkg/pb/base/v1"
 )
 
 // SchemaReader - Structure for Schema Reader
@@ -37,17 +37,17 @@ func (r *SchemaReader) ReadSchema(ctx context.Context, tenantID, version string)
 	if err != nil {
 		return sch, errors.New(base.ErrorCode_ERROR_CODE_EXECUTION.String())
 	}
-
+	
 	var definitions []string
 	for obj := it.Next(); obj != nil; obj = it.Next() {
 		definitions = append(definitions, obj.(repositories.SchemaDefinition).Serialized())
 	}
-
+	
 	sch, err = schema.NewSchemaFromStringDefinitions(true, definitions...)
 	if err != nil {
 		return nil, err
 	}
-
+	
 	return sch, nil
 }
 
@@ -60,7 +60,7 @@ func (r *SchemaReader) ReadSchemaDefinition(ctx context.Context, tenantID, entit
 	if err != nil {
 		return nil, "", errors.New(base.ErrorCode_ERROR_CODE_EXECUTION.String())
 	}
-
+	
 	def, ok := raw.(repositories.SchemaDefinition)
 	if ok {
 		var sch *base.SchemaDefinition
@@ -74,7 +74,7 @@ func (r *SchemaReader) ReadSchemaDefinition(ctx context.Context, tenantID, entit
 		}
 		return definition, def.Version, err
 	}
-
+	
 	return nil, "", errors.New(base.ErrorCode_ERROR_CODE_SCHEMA_NOT_FOUND.String())
 }
 

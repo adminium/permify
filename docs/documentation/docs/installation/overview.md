@@ -180,7 +180,7 @@ For our guide let's grant one of the team members (Ashley) an admin role.
 **Semantics:** User 1 (Ashley) has admin role on organization 1.
 
 :::tip
-In ideal production usage Permify stores your authorization data in a database you prefer. We called that database as WriteDB, and you can configure it with using [configuration yaml file](https://github.com/Permify/permify/blob/master/example.config.yaml) or CLI flag options. 
+In ideal production usage Permify stores your authorization data in a database you prefer. We called that database as WriteDB, and you can configure it with using [configuration yaml file](https://github.com/adminium/permify/blob/master/example.config.yaml) or CLI flag options. 
 
 But in this tutorial Permify Service running default configurations on local, so authorization data will be stored in memory. You can find more detailed explanation how Permify stores authorization data in [Managing Authorization Data] section.
 

@@ -2,11 +2,11 @@ package schema
 
 import (
 	"testing"
-
+	
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-
-	base "github.com/Permify/permify/pkg/pb/base/v1"
+	
+	base "github.com/adminium/permify/pkg/pb/base/v1"
 )
 
 // TestBuilder -
@@ -21,7 +21,7 @@ var _ = Describe("compiler", func() {
 			is := Schema(
 				Entity("user", Relations(), Actions()),
 			)
-
+			
 			Expect(is.EntityDefinitions).Should(Equal(map[string]*base.EntityDefinition{
 				"user": {
 					Name:       "user",
@@ -31,7 +31,7 @@ var _ = Describe("compiler", func() {
 				},
 			}))
 		})
-
+		
 		It("Case 2", func() {
 			is := Schema(
 				Entity("user", Relations(), Actions()),
@@ -50,7 +50,7 @@ var _ = Describe("compiler", func() {
 					),
 				),
 			)
-
+			
 			Expect(is.EntityDefinitions).Should(Equal(map[string]*base.EntityDefinition{
 				"user": {
 					Name:       "user",
@@ -126,7 +126,7 @@ var _ = Describe("compiler", func() {
 				},
 			}))
 		})
-
+		
 		It("Case 3", func() {
 			is := Schema(
 				Entity("user", Relations(), Actions()),
@@ -148,7 +148,7 @@ var _ = Describe("compiler", func() {
 					),
 				),
 			)
-
+			
 			Expect(is.EntityDefinitions).Should(Equal(map[string]*base.EntityDefinition{
 				"user": {
 					Name:       "user",
@@ -245,7 +245,7 @@ var _ = Describe("compiler", func() {
 				},
 			}))
 		})
-
+		
 		It("Case 4", func() {
 			is := Schema(
 				Entity("user", Relations(), Actions()),
@@ -261,7 +261,7 @@ var _ = Describe("compiler", func() {
 					),
 				),
 			)
-
+			
 			Expect(is.EntityDefinitions).Should(Equal(map[string]*base.EntityDefinition{
 				"user": {
 					Name:       "user",
@@ -316,7 +316,7 @@ var _ = Describe("compiler", func() {
 				},
 			}))
 		})
-
+		
 		It("Case 5", func() {
 			is := Schema(
 				Entity("user", Relations(), Actions()),
@@ -349,7 +349,7 @@ var _ = Describe("compiler", func() {
 					),
 				),
 			)
-
+			
 			Expect(is.EntityDefinitions).Should(Equal(map[string]*base.EntityDefinition{
 				"user": {
 					Name:       "user",

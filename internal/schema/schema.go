@@ -3,10 +3,10 @@ package schema
 import (
 	"errors"
 	"strings"
-
-	"github.com/Permify/permify/pkg/dsl/compiler"
-	"github.com/Permify/permify/pkg/dsl/parser"
-	base "github.com/Permify/permify/pkg/pb/base/v1"
+	
+	"github.com/adminium/permify/pkg/dsl/compiler"
+	"github.com/adminium/permify/pkg/dsl/parser"
+	base "github.com/adminium/permify/pkg/pb/base/v1"
 )
 
 // NewSchemaFromStringDefinitions -

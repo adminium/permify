@@ -3,13 +3,13 @@ package decorators
 import (
 	"context"
 	"errors"
-
+	
 	"github.com/afex/hystrix-go/hystrix"
-
-	"github.com/Permify/permify/internal/repositories"
-	"github.com/Permify/permify/pkg/database"
-	base "github.com/Permify/permify/pkg/pb/base/v1"
-	"github.com/Permify/permify/pkg/token"
+	
+	"github.com/adminium/permify/internal/repositories"
+	"github.com/adminium/permify/pkg/database"
+	base "github.com/adminium/permify/pkg/pb/base/v1"
+	"github.com/adminium/permify/pkg/token"
 )
 
 // RelationshipReaderWithCircuitBreaker - Add circuit breaker behaviour to relationship reader
@@ -28,7 +28,7 @@ func (r *RelationshipReaderWithCircuitBreaker) QueryRelationships(ctx context.Co
 		Iterator *database.TupleIterator
 		Error    error
 	}
-
+	
 	output := make(chan circuitBreakerResponse, 1)
 	hystrix.ConfigureCommand("relationshipReader.queryRelationships", hystrix.CommandConfig{Timeout: 1000})
 	bErrors := hystrix.Go("relationshipReader.queryRelationships", func() error {
@@ -38,7 +38,7 @@ func (r *RelationshipReaderWithCircuitBreaker) QueryRelationships(ctx context.Co
 	}, func(err error) error {
 		return nil
 	})
-
+	
 	select {
 	case out := <-output:
 		return out.Iterator, out.Error
@@ -54,7 +54,7 @@ func (r *RelationshipReaderWithCircuitBreaker) ReadRelationships(ctx context.Con
 		ContinuousToken database.EncodedContinuousToken
 		Error           error
 	}
-
+	
 	output := make(chan circuitBreakerResponse, 1)
 	hystrix.ConfigureCommand("relationshipReader.readRelationships", hystrix.CommandConfig{Timeout: 1000})
 	bErrors := hystrix.Go("relationshipReader.readRelationships", func() error {
@@ -64,7 +64,7 @@ func (r *RelationshipReaderWithCircuitBreaker) ReadRelationships(ctx context.Con
 	}, func(err error) error {
 		return nil
 	})
-
+	
 	select {
 	case out := <-output:
 		return out.Collection, out.ContinuousToken, out.Error
@@ -79,7 +79,7 @@ func (r *RelationshipReaderWithCircuitBreaker) GetUniqueEntityIDsByEntityType(ct
 		IDs   []string
 		Error error
 	}
-
+	
 	output := make(chan circuitBreakerResponse, 1)
 	hystrix.ConfigureCommand("relationshipReader.queryRelationships", hystrix.CommandConfig{Timeout: 1000})
 	bErrors := hystrix.Go("relationshipReader.queryRelationships", func() error {
@@ -89,7 +89,7 @@ func (r *RelationshipReaderWithCircuitBreaker) GetUniqueEntityIDsByEntityType(ct
 	}, func(err error) error {
 		return nil
 	})
-
+	
 	select {
 	case out := <-output:
 		return out.IDs, out.Error
@@ -104,7 +104,7 @@ func (r *RelationshipReaderWithCircuitBreaker) HeadSnapshot(ctx context.Context,
 		Token token.SnapToken
 		Error error
 	}
-
+	
 	output := make(chan circuitBreakerResponse, 1)
 	hystrix.ConfigureCommand("relationshipReader.headSnapshot", hystrix.CommandConfig{Timeout: 1000})
 	bErrors := hystrix.Go("relationshipReader.headSnapshot", func() error {
@@ -114,7 +114,7 @@ func (r *RelationshipReaderWithCircuitBreaker) HeadSnapshot(ctx context.Context,
 	}, func(err error) error {
 		return nil
 	})
-
+	
 	select {
 	case out := <-output:
 		return out.Token, out.Error

@@ -4,17 +4,17 @@ import (
 	"context"
 	"errors"
 	"time"
-
+	
 	"github.com/hashicorp/go-memdb"
-
-	"github.com/Permify/permify/internal/repositories"
-	"github.com/Permify/permify/internal/repositories/memory/snapshot"
-	"github.com/Permify/permify/internal/repositories/memory/utils"
-	"github.com/Permify/permify/pkg/database"
-	db "github.com/Permify/permify/pkg/database/memory"
-	"github.com/Permify/permify/pkg/logger"
-	base "github.com/Permify/permify/pkg/pb/base/v1"
-	"github.com/Permify/permify/pkg/token"
+	
+	"github.com/adminium/permify/internal/repositories"
+	"github.com/adminium/permify/internal/repositories/memory/snapshot"
+	"github.com/adminium/permify/internal/repositories/memory/utils"
+	"github.com/adminium/permify/pkg/database"
+	db "github.com/adminium/permify/pkg/database/memory"
+	"github.com/adminium/permify/pkg/logger"
+	base "github.com/adminium/permify/pkg/pb/base/v1"
+	"github.com/adminium/permify/pkg/token"
 )
 
 type RelationshipWriter struct {
@@ -34,15 +34,15 @@ func NewRelationshipWriter(database *db.Memory, logger logger.Interface) *Relati
 // WriteRelationships - Write a Relation to repository
 func (r *RelationshipWriter) WriteRelationships(ctx context.Context, tenantID string, collection *database.TupleCollection) (token.EncodedSnapToken, error) {
 	var err error
-
+	
 	iterator := collection.CreateTupleIterator()
 	if !iterator.HasNext() {
 		return token.NewNoopToken().Encode(), nil
 	}
-
+	
 	txn := r.database.DB.Txn(true)
 	defer txn.Abort()
-
+	
 	for iterator.HasNext() {
 		bt := iterator.GetNext()
 		t := repositories.RelationTuple{
@@ -59,7 +59,7 @@ func (r *RelationshipWriter) WriteRelationships(ctx context.Context, tenantID st
 			return nil, errors.New(base.ErrorCode_ERROR_CODE_EXECUTION.String())
 		}
 	}
-
+	
 	txn.Commit()
 	return snapshot.NewToken(time.Now()).Encode(), nil
 }
@@ -69,14 +69,14 @@ func (r *RelationshipWriter) DeleteRelationships(ctx context.Context, tenantID s
 	var err error
 	txn := r.database.DB.Txn(true)
 	defer txn.Abort()
-
+	
 	index, args := utils.GetIndexNameAndArgsByFilters(tenantID, filter)
 	var it memdb.ResultIterator
 	it, err = txn.Get(RelationTuplesTable, index, args...)
 	if err != nil {
 		return nil, errors.New(base.ErrorCode_ERROR_CODE_EXECUTION.String())
 	}
-
+	
 	fit := memdb.NewFilterIterator(it, utils.FilterQuery(filter))
 	for obj := fit.Next(); obj != nil; obj = fit.Next() {
 		t, ok := obj.(repositories.RelationTuple)
@@ -88,7 +88,7 @@ func (r *RelationshipWriter) DeleteRelationships(ctx context.Context, tenantID s
 			return nil, errors.New(base.ErrorCode_ERROR_CODE_EXECUTION.String())
 		}
 	}
-
+	
 	txn.Commit()
 	return snapshot.NewToken(time.Now()).Encode(), nil
 }

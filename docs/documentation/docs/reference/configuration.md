@@ -2,7 +2,7 @@
 
 Permify offers various options for configuring your Permify API Server. 
 
-Here is the example configuration YAML file with glossary below. You can also find this [example config file](https://github.com/Permify/permify/blob/master/example.config.yaml) in Permify repo.
+Here is the example configuration YAML file with glossary below. You can also find this [example config file](https://github.com/adminium/permify/blob/master/example.config.yaml) in Permify repo.
 
 ***Example config.yaml file***
 

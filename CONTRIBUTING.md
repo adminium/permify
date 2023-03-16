@@ -2,7 +2,7 @@
 
 Welcome to Permify contribution guidelines, happy to see you here :blush:
 
-Before participating in the community, we must spesificy that all of the contributions must follow our [Code of Conduct](https://github.com/Permify/permify/blob/master/CODE_OF_CONDUCT.md). Please read it before you make any contributions.
+Before participating in the community, we must spesificy that all of the contributions must follow our [Code of Conduct](https://github.com/adminium/permify/blob/master/CODE_OF_CONDUCT.md). Please read it before you make any contributions.
 
 If you need any help or want to talk about about a spesific issue, you can always reach out to me from my mail:ege@permify.co.
 

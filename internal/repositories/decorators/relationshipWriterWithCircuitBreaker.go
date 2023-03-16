@@ -3,13 +3,13 @@ package decorators
 import (
 	"context"
 	"errors"
-
+	
 	"github.com/afex/hystrix-go/hystrix"
-
-	"github.com/Permify/permify/internal/repositories"
-	"github.com/Permify/permify/pkg/database"
-	base "github.com/Permify/permify/pkg/pb/base/v1"
-	"github.com/Permify/permify/pkg/token"
+	
+	"github.com/adminium/permify/internal/repositories"
+	"github.com/adminium/permify/pkg/database"
+	base "github.com/adminium/permify/pkg/pb/base/v1"
+	"github.com/adminium/permify/pkg/token"
 )
 
 // RelationshipWriterWithCircuitBreaker - Add circuit breaker behaviour to relationship writer
@@ -28,9 +28,9 @@ func (r *RelationshipWriterWithCircuitBreaker) WriteRelationships(ctx context.Co
 		Token token.EncodedSnapToken
 		Error error
 	}
-
+	
 	output := make(chan circuitBreakerResponse, 1)
-
+	
 	hystrix.ConfigureCommand("relationshipWriter.writeRelationships", hystrix.CommandConfig{Timeout: 1000})
 	bErrors := hystrix.Go("relationshipWriter.writeRelationships", func() error {
 		t, err := r.delegate.WriteRelationships(ctx, tenantID, collection)
@@ -39,7 +39,7 @@ func (r *RelationshipWriterWithCircuitBreaker) WriteRelationships(ctx context.Co
 	}, func(err error) error {
 		return nil
 	})
-
+	
 	select {
 	case out := <-output:
 		return out.Token, out.Error
@@ -54,9 +54,9 @@ func (r *RelationshipWriterWithCircuitBreaker) DeleteRelationships(ctx context.C
 		Token token.EncodedSnapToken
 		Error error
 	}
-
+	
 	output := make(chan circuitBreakerResponse, 1)
-
+	
 	hystrix.ConfigureCommand("relationshipWriter.deleteRelationships", hystrix.CommandConfig{Timeout: 1000})
 	bErrors := hystrix.Go("relationshipWriter.deleteRelationships", func() error {
 		t, err := r.delegate.DeleteRelationships(ctx, tenantID, filter)
@@ -65,7 +65,7 @@ func (r *RelationshipWriterWithCircuitBreaker) DeleteRelationships(ctx context.C
 	}, func(err error) error {
 		return nil
 	})
-
+	
 	select {
 	case out := <-output:
 		return out.Token, out.Error

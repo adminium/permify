@@ -2,19 +2,19 @@ package servers
 
 import (
 	"context"
-
+	
 	otelCodes "go.opentelemetry.io/otel/codes"
 	"google.golang.org/grpc/status"
-
-	"github.com/Permify/permify/internal/services"
-	"github.com/Permify/permify/pkg/logger"
-	v1 "github.com/Permify/permify/pkg/pb/base/v1"
+	
+	"github.com/adminium/permify/internal/services"
+	"github.com/adminium/permify/pkg/logger"
+	v1 "github.com/adminium/permify/pkg/pb/base/v1"
 )
 
 // TenancyServer - Structure for Tenancy Server
 type TenancyServer struct {
 	v1.UnimplementedTenancyServer
-
+	
 	tenancyService services.ITenancyService
 	logger         logger.Interface
 }
@@ -31,7 +31,7 @@ func NewTenancyServer(s services.ITenancyService, l logger.Interface) *TenancySe
 func (t *TenancyServer) Create(ctx context.Context, request *v1.TenantCreateRequest) (*v1.TenantCreateResponse, error) {
 	ctx, span := tracer.Start(ctx, "tenant.create")
 	defer span.End()
-
+	
 	tenant, err := t.tenancyService.CreateTenant(ctx, request.GetId(), request.GetName())
 	if err != nil {
 		span.RecordError(err)
@@ -39,7 +39,7 @@ func (t *TenancyServer) Create(ctx context.Context, request *v1.TenantCreateRequ
 		t.logger.Error(err.Error())
 		return nil, status.Error(GetStatus(err), err.Error())
 	}
-
+	
 	return &v1.TenantCreateResponse{
 		Tenant: tenant,
 	}, nil
@@ -49,7 +49,7 @@ func (t *TenancyServer) Create(ctx context.Context, request *v1.TenantCreateRequ
 func (t *TenancyServer) Delete(ctx context.Context, request *v1.TenantDeleteRequest) (*v1.TenantDeleteResponse, error) {
 	ctx, span := tracer.Start(ctx, "tenant.delete")
 	defer span.End()
-
+	
 	tenant, err := t.tenancyService.DeleteTenant(ctx, request.GetId())
 	if err != nil {
 		span.RecordError(err)
@@ -57,7 +57,7 @@ func (t *TenancyServer) Delete(ctx context.Context, request *v1.TenantDeleteRequ
 		t.logger.Error(err.Error())
 		return nil, status.Error(GetStatus(err), err.Error())
 	}
-
+	
 	return &v1.TenantDeleteResponse{
 		Tenant: tenant,
 	}, nil
@@ -67,7 +67,7 @@ func (t *TenancyServer) Delete(ctx context.Context, request *v1.TenantDeleteRequ
 func (t *TenancyServer) List(ctx context.Context, request *v1.TenantListRequest) (*v1.TenantListResponse, error) {
 	ctx, span := tracer.Start(ctx, "tenant.list")
 	defer span.End()
-
+	
 	tenants, ct, err := t.tenancyService.ListTenants(ctx, request.GetPageSize(), request.GetContinuousToken())
 	if err != nil {
 		span.RecordError(err)
@@ -75,7 +75,7 @@ func (t *TenancyServer) List(ctx context.Context, request *v1.TenantListRequest)
 		t.logger.Error(err.Error())
 		return nil, status.Error(GetStatus(err), err.Error())
 	}
-
+	
 	return &v1.TenantListResponse{
 		Tenants:         tenants,
 		ContinuousToken: ct.String(),

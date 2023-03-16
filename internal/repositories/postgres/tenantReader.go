@@ -4,16 +4,16 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-
+	
 	"github.com/Masterminds/squirrel"
 	"go.opentelemetry.io/otel/codes"
-
-	"github.com/Permify/permify/internal/repositories"
-	"github.com/Permify/permify/internal/repositories/postgres/utils"
-	"github.com/Permify/permify/pkg/database"
-	db "github.com/Permify/permify/pkg/database/postgres"
-	"github.com/Permify/permify/pkg/logger"
-	base "github.com/Permify/permify/pkg/pb/base/v1"
+	
+	"github.com/adminium/permify/internal/repositories"
+	"github.com/adminium/permify/internal/repositories/postgres/utils"
+	"github.com/adminium/permify/pkg/database"
+	db "github.com/adminium/permify/pkg/database/postgres"
+	"github.com/adminium/permify/pkg/logger"
+	base "github.com/adminium/permify/pkg/pb/base/v1"
 )
 
 type TenantReader struct {
@@ -37,7 +37,7 @@ func NewTenantReader(database *db.Postgres, logger logger.Interface) *TenantRead
 func (r *TenantReader) ListTenants(ctx context.Context, pagination database.Pagination) (tenants []*base.Tenant, ct database.EncodedContinuousToken, err error) {
 	ctx, span := tracer.Start(ctx, "tenant-reader.list-tenants")
 	defer span.End()
-
+	
 	builder := r.database.Builder.Select("id, name, created_at").From(TenantsTable)
 	if pagination.Token() != "" {
 		var t database.ContinuousToken
@@ -49,19 +49,19 @@ func (r *TenantReader) ListTenants(ctx context.Context, pagination database.Pagi
 		}
 		builder = builder.Where(squirrel.GtOrEq{"id": t.(utils.ContinuousToken).Value})
 	}
-
+	
 	builder = builder.OrderBy("id").Limit(uint64(pagination.PageSize() + 1))
-
+	
 	var query string
 	var args []interface{}
-
+	
 	query, args, err = builder.ToSql()
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		return nil, nil, errors.New(base.ErrorCode_ERROR_CODE_SQL_BUILDER.String())
 	}
-
+	
 	var rows *sql.Rows
 	rows, err = r.database.DB.QueryContext(ctx, query, args...)
 	if err != nil {
@@ -70,7 +70,7 @@ func (r *TenantReader) ListTenants(ctx context.Context, pagination database.Pagi
 		return nil, nil, errors.New(base.ErrorCode_ERROR_CODE_EXECUTION.String())
 	}
 	defer rows.Close()
-
+	
 	var lastID string
 	tenants = make([]*base.Tenant, 0, pagination.PageSize()+1)
 	for rows.Next() {
@@ -89,10 +89,10 @@ func (r *TenantReader) ListTenants(ctx context.Context, pagination database.Pagi
 		span.SetStatus(codes.Error, err.Error())
 		return nil, nil, err
 	}
-
+	
 	if len(tenants) > int(pagination.PageSize()) {
 		return tenants[:pagination.PageSize()], utils.NewContinuousToken(lastID).Encode(), nil
 	}
-
+	
 	return tenants, utils.NewNoopContinuousToken().Encode(), nil
 }

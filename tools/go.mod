@@ -1,4 +1,4 @@
-module github.com/Permify/permify/tools
+module github.com/adminium/permify/tools
 
 go 1.19
 

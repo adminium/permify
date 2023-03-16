@@ -2,22 +2,22 @@ package servers
 
 import (
 	"errors"
-
+	
 	"google.golang.org/grpc/status"
-
+	
 	otelCodes "go.opentelemetry.io/otel/codes"
 	"golang.org/x/net/context"
-
-	"github.com/Permify/permify/internal/services"
-	"github.com/Permify/permify/pkg/logger"
-	v1 "github.com/Permify/permify/pkg/pb/base/v1"
-	"github.com/Permify/permify/pkg/tuple"
+	
+	"github.com/adminium/permify/internal/services"
+	"github.com/adminium/permify/pkg/logger"
+	v1 "github.com/adminium/permify/pkg/pb/base/v1"
+	"github.com/adminium/permify/pkg/tuple"
 )
 
 // RelationshipServer - Structure for Relationship Server
 type RelationshipServer struct {
 	v1.UnimplementedRelationshipServer
-
+	
 	relationshipService services.IRelationshipService
 	logger              logger.Interface
 }
@@ -34,12 +34,12 @@ func NewRelationshipServer(r services.IRelationshipService, l logger.Interface) 
 func (r *RelationshipServer) Read(ctx context.Context, request *v1.RelationshipReadRequest) (*v1.RelationshipReadResponse, error) {
 	ctx, span := tracer.Start(ctx, "relationships.read")
 	defer span.End()
-
+	
 	v := request.Validate()
 	if v != nil {
 		return nil, v
 	}
-
+	
 	collection, ct, err := r.relationshipService.ReadRelationships(ctx, request.GetTenantId(), request.GetFilter(), request.GetMetadata().GetSnapToken(), request.GetPageSize(), request.GetContinuousToken())
 	if err != nil {
 		span.RecordError(err)
@@ -47,7 +47,7 @@ func (r *RelationshipServer) Read(ctx context.Context, request *v1.RelationshipR
 		r.logger.Error(err.Error())
 		return nil, status.Error(GetStatus(err), err.Error())
 	}
-
+	
 	return &v1.RelationshipReadResponse{
 		Tuples:          collection.GetTuples(),
 		ContinuousToken: ct.String(),
@@ -58,12 +58,12 @@ func (r *RelationshipServer) Read(ctx context.Context, request *v1.RelationshipR
 func (r *RelationshipServer) Write(ctx context.Context, request *v1.RelationshipWriteRequest) (*v1.RelationshipWriteResponse, error) {
 	ctx, span := tracer.Start(ctx, "relationships.write")
 	defer span.End()
-
+	
 	v := request.Validate()
 	if v != nil {
 		return nil, v
 	}
-
+	
 	for _, tup := range request.GetTuples() {
 		if tuple.IsSubjectUser(tup.GetSubject()) {
 			if tup.GetSubject().GetRelation() != "" {
@@ -71,7 +71,7 @@ func (r *RelationshipServer) Write(ctx context.Context, request *v1.Relationship
 			}
 		}
 	}
-
+	
 	snap, err := r.relationshipService.WriteRelationships(ctx, request.GetTenantId(), request.GetTuples(), request.GetMetadata().GetSchemaVersion())
 	if err != nil {
 		span.RecordError(err)
@@ -79,7 +79,7 @@ func (r *RelationshipServer) Write(ctx context.Context, request *v1.Relationship
 		r.logger.Error(err.Error())
 		return nil, status.Error(GetStatus(err), err.Error())
 	}
-
+	
 	return &v1.RelationshipWriteResponse{
 		SnapToken: snap.String(),
 	}, nil
@@ -89,12 +89,12 @@ func (r *RelationshipServer) Write(ctx context.Context, request *v1.Relationship
 func (r *RelationshipServer) Delete(ctx context.Context, request *v1.RelationshipDeleteRequest) (*v1.RelationshipDeleteResponse, error) {
 	ctx, span := tracer.Start(ctx, "relationships.delete")
 	defer span.End()
-
+	
 	v := request.Validate()
 	if v != nil {
 		return nil, v
 	}
-
+	
 	snap, err := r.relationshipService.DeleteRelationships(ctx, request.GetTenantId(), request.GetFilter())
 	if err != nil {
 		span.RecordError(err)
@@ -102,7 +102,7 @@ func (r *RelationshipServer) Delete(ctx context.Context, request *v1.Relationshi
 		r.logger.Error(err.Error())
 		return nil, status.Error(GetStatus(err), err.Error())
 	}
-
+	
 	return &v1.RelationshipDeleteResponse{
 		SnapToken: snap.String(),
 	}, nil

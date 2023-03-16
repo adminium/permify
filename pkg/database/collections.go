@@ -1,7 +1,7 @@
 package database
 
 import (
-	base "github.com/Permify/permify/pkg/pb/base/v1"
+	base "github.com/adminium/permify/pkg/pb/base/v1"
 )
 
 // TupleCollection -Tuple collection.

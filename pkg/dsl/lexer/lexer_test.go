@@ -3,11 +3,11 @@ package lexer
 import (
 	"strconv"
 	"testing"
-
+	
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-
-	"github.com/Permify/permify/pkg/dsl/token"
+	
+	"github.com/adminium/permify/pkg/dsl/token"
 )
 
 // TestLexer -
@@ -30,7 +30,7 @@ entity organization {
 	action delete = admin
 }
 `
-
+			
 			tests := []struct {
 				expectedType    token.Type
 				expectedLiteral string
@@ -109,9 +109,9 @@ entity organization {
 				{token.NEWLINE, "\n"},
 				{token.EOF, ""},
 			}
-
+			
 			l := NewLexer(str)
-
+			
 			for i, tt := range tests {
 				lexeme := l.NextToken()
 				index := strconv.Itoa(i) + ": "
@@ -119,7 +119,7 @@ entity organization {
 				Expect(index + lexeme.Literal).Should(Equal(index + tt.expectedLiteral))
 			}
 		})
-
+		
 		It("Case 2", func() {
 			str := `
 entity user {}
@@ -130,7 +130,7 @@ entity organization {
 	action create_repository = admin or member
 	action delete = admin
 }`
-
+			
 			tests := []struct {
 				expectedType    token.Type
 				expectedLiteral string
@@ -199,9 +199,9 @@ entity organization {
 				{token.RBRACE, "}"},
 				{token.EOF, ""},
 			}
-
+			
 			l := NewLexer(str)
-
+			
 			for i, tt := range tests {
 				lexeme := l.NextToken()
 				index := strconv.Itoa(i) + ": "
@@ -209,7 +209,7 @@ entity organization {
 				Expect(index + lexeme.Literal).Should(Equal(index + tt.expectedLiteral))
 			}
 		})
-
+		
 		It("Case 3", func() {
 			str := `
 entity user {}
@@ -231,7 +231,7 @@ entity repository {
 	relation member @user @organization#member
 	action update = parent.delete or (member and parent.admin)
 }`
-
+			
 			tests := []struct {
 				expectedType    token.Type
 				expectedLiteral string
@@ -361,9 +361,9 @@ entity repository {
 				{token.RBRACE, "}"},
 				{token.EOF, ""},
 			}
-
+			
 			l := NewLexer(str)
-
+			
 			for i, tt := range tests {
 				lexeme := l.NextToken()
 				index := strconv.Itoa(i) + ": "
@@ -371,7 +371,7 @@ entity repository {
 				Expect(index + lexeme.Literal).Should(Equal(index + tt.expectedLiteral))
 			}
 		})
-
+		
 		It("Case 4", func() {
 			str := `
 entity user {}
@@ -384,7 +384,7 @@ entity organization {
 }
 */
 `
-
+			
 			tests := []struct {
 				expectedType    token.Type
 				expectedLiteral string
@@ -402,9 +402,9 @@ entity organization {
 				// --
 				{token.EOF, ""},
 			}
-
+			
 			l := NewLexer(str)
-
+			
 			for i, tt := range tests {
 				lexeme := l.NextToken()
 				index := strconv.Itoa(i) + ": "
@@ -412,7 +412,7 @@ entity organization {
 				Expect(index + lexeme.Literal).Should(Equal(index + tt.expectedLiteral))
 			}
 		})
-
+		
 		It("Case 5", func() {
 			str := `
 entity user {}
@@ -424,7 +424,7 @@ entity organization {
 	action delete = admin
 }
 `
-
+			
 			tests := []struct {
 				expectedType    token.Type
 				expectedLiteral string
@@ -440,9 +440,9 @@ entity organization {
 				{token.MULTI_LINE_COMMENT, "\nentity organization {\n\trelation admin @user\n\trelation member @user\n\taction create_repository = admin or member\n\taction delete = admin\n}\n"},
 				{token.EOF, ""},
 			}
-
+			
 			l := NewLexer(str)
-
+			
 			for i, tt := range tests {
 				lexeme := l.NextToken()
 				index := strconv.Itoa(i) + ": "
@@ -450,7 +450,7 @@ entity organization {
 				Expect(index + lexeme.Literal).Should(Equal(index + tt.expectedLiteral))
 			}
 		})
-
+		
 		It("Case 6", func() {
 			str := `
 	entity user {}
@@ -465,7 +465,7 @@ entity organization {
 
 		action enabled = org
 	}`
-
+			
 			tests := []struct {
 				expectedType    token.Type
 				expectedLiteral string
@@ -483,7 +483,7 @@ entity organization {
 				{token.TAB, "\t"},
 				{token.ENTITY, "entity"},
 				{token.SPACE, " "},
-
+				
 				{token.IDENT, "organization"},
 				{token.SPACE, " "},
 				{token.LBRACE, "{"},
@@ -495,7 +495,7 @@ entity organization {
 				{token.IDENT, "member"},
 				{token.SPACE, " "},
 				{token.SIGN, "@"},
-
+				
 				{token.IDENT, "user"},
 				{token.NEWLINE, "\n"},
 				{token.TAB, "\t"},
@@ -509,7 +509,7 @@ entity organization {
 				{token.ENTITY, "entity"},
 				{token.SPACE, " "},
 				{token.IDENT, "maintainer"},
-
+				
 				{token.SPACE, " "},
 				{token.LBRACE, "{"},
 				{token.NEWLINE, "\n"},
@@ -527,7 +527,7 @@ entity organization {
 				{token.NEWLINE, "\n"},
 				{token.TAB, "\t"},
 				{token.TAB, "\t"},
-
+				
 				{token.ACTION, "action"},
 				{token.SPACE, " "},
 				{token.IDENT, "enabled"},
@@ -540,9 +540,9 @@ entity organization {
 				{token.RBRACE, "}"},
 				{token.EOF, ""},
 			}
-
+			
 			l := NewLexer(str)
-
+			
 			for i, tt := range tests {
 				lexeme := l.NextToken()
 				index := strconv.Itoa(i) + ": "

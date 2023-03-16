@@ -22,7 +22,7 @@ Permify designed to be store authorization data in a database you prefer as rela
 
 ### Configuration File
 
-Here is the example configuration YAML file with descriptions below. You can also find this [example config file](https://github.com/Permify/permify/blob/master/example.config.yaml) in Permify repo.
+Here is the example configuration YAML file with descriptions below. You can also find this [example config file](https://github.com/adminium/permify/blob/master/example.config.yaml) in Permify repo.
 
 ***Example config.yaml file***
 

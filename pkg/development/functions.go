@@ -2,11 +2,11 @@ package development
 
 import (
 	"context"
-
-	"github.com/Permify/permify/internal/services"
-	"github.com/Permify/permify/pkg/database"
-	v1 "github.com/Permify/permify/pkg/pb/base/v1"
-	"github.com/Permify/permify/pkg/token"
+	
+	"github.com/adminium/permify/internal/services"
+	"github.com/adminium/permify/pkg/database"
+	v1 "github.com/adminium/permify/pkg/pb/base/v1"
+	"github.com/adminium/permify/pkg/token"
 )
 
 // Check - Creates new permission check request

@@ -84,7 +84,7 @@ const MainLayout = ({children, ...rest}) => {
                             How to use playground?
                         </Button>
                         <Button className="mr-8" type="secondary" target="_blank" icon={<GithubOutlined/>}
-                                href="https://github.com/Permify/permify">
+                                href="https://github.com/adminium/permify">
                             Get Started
                         </Button>
                         <Button type="primary" href="https://discord.com/invite/MJbUjwskdH" target="_blank">Join

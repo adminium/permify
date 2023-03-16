@@ -4,10 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-
+	
 	"golang.org/x/exp/slices"
-
-	base "github.com/Permify/permify/pkg/pb/base/v1"
+	
+	base "github.com/adminium/permify/pkg/pb/base/v1"
 )
 
 const (
@@ -65,7 +65,7 @@ func ValidateSubjectType(subject *base.Subject, relationTypes []string) (err err
 	if len(relationTypes) == 0 {
 		return errors.New(base.ErrorCode_ERROR_CODE_SUBJECT_TYPE_NOT_FOUND.String())
 	}
-
+	
 	key := subject.GetType()
 	if subject.GetRelation() != "" {
 		if !IsSubjectUser(subject) {
@@ -74,7 +74,7 @@ func ValidateSubjectType(subject *base.Subject, relationTypes []string) (err err
 			}
 		}
 	}
-
+	
 	if !slices.Contains(relationTypes, key) {
 		return errors.New(base.ErrorCode_ERROR_CODE_SUBJECT_TYPE_NOT_FOUND.String())
 	}
@@ -102,11 +102,11 @@ func IsSubjectValid(subject *base.Subject) bool {
 	if subject.GetType() == "" {
 		return false
 	}
-
+	
 	if subject.GetId() == "" {
 		return false
 	}
-
+	
 	if IsSubjectUser(subject) {
 		return subject.GetRelation() == ""
 	}

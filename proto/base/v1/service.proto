@@ -3,7 +3,7 @@ package base.v1;
 
 import "google/protobuf/empty.proto";
 
-option go_package = "github.com/Permify/permify/pkg/pb/base/v1";
+option go_package = "github.com/adminium/permify/pkg/pb/base/v1";
 
 import "base/v1/tuple.proto";
 import "base/v1/schema.proto";

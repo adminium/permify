@@ -2,14 +2,14 @@ package snapshot
 
 import (
 	"testing"
-
+	
 	"github.com/jackc/pgtype"
-
+	
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-
-	"github.com/Permify/permify/internal/repositories/postgres/types"
-	"github.com/Permify/permify/pkg/token"
+	
+	"github.com/adminium/permify/internal/repositories/postgres/types"
+	"github.com/adminium/permify/pkg/token"
 )
 
 // TestToken -
@@ -32,12 +32,12 @@ var _ = Describe("token", func() {
 				{NewToken(types.XID8{Uint: 87648723472386, Status: pgtype.Present}), "AhAHT7dPAAA="},
 				{NewToken(types.XID8{Uint: 2349875239487420823, Status: pgtype.Present}), "lzkihBRvnCA="},
 			}
-
+			
 			for _, tt := range tests {
 				Expect(tt.target.Encode().String()).Should(Equal(tt.expected))
 			}
 		})
-
+		
 		It("Case 2: Fail", func() {
 			tests := []struct {
 				target   token.SnapToken
@@ -45,13 +45,13 @@ var _ = Describe("token", func() {
 			}{
 				{NewToken(types.XID8{Uint: 4, Status: pgtype.Present}), " BAAAAAAAAAA="},
 			}
-
+			
 			for _, tt := range tests {
 				Expect(tt.target.Encode().String()).ShouldNot(Equal(tt.expected))
 			}
 		})
 	})
-
+	
 	Context("Decode", func() {
 		It("Case 1: Success", func() {
 			tests := []struct {
@@ -65,14 +65,14 @@ var _ = Describe("token", func() {
 				{EncodedToken{Value: "AhAHT7dPAAA="}, NewToken(types.XID8{Uint: 87648723472386, Status: pgtype.Present})},
 				{EncodedToken{Value: "lzkihBRvnCA="}, NewToken(types.XID8{Uint: 2349875239487420823, Status: pgtype.Present})},
 			}
-
+			
 			for _, tt := range tests {
 				t, err := tt.target.Decode()
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(t).Should(Equal(tt.expected))
 			}
 		})
-
+		
 		It("Case 2: Fail", func() {
 			tests := []struct {
 				target   token.EncodedSnapToken
@@ -80,7 +80,7 @@ var _ = Describe("token", func() {
 			}{
 				{EncodedToken{Value: "BAAAaAAAAAA="}, Token{Value: types.XID8{Uint: 4, Status: pgtype.Present}}},
 			}
-
+			
 			for _, tt := range tests {
 				t, err := tt.target.Decode()
 				Expect(err).ShouldNot(HaveOccurred())

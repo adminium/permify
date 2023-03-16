@@ -6,14 +6,14 @@ import (
 	"errors"
 	"strings"
 	"time"
-
+	
 	"github.com/Masterminds/squirrel"
 	otelCodes "go.opentelemetry.io/otel/codes"
 	"google.golang.org/protobuf/types/known/timestamppb"
-
-	db "github.com/Permify/permify/pkg/database/postgres"
-	"github.com/Permify/permify/pkg/logger"
-	base "github.com/Permify/permify/pkg/pb/base/v1"
+	
+	db "github.com/adminium/permify/pkg/database/postgres"
+	"github.com/adminium/permify/pkg/logger"
+	base "github.com/adminium/permify/pkg/pb/base/v1"
 )
 
 // TenantWriter - Structure for Tenant Writer
@@ -38,11 +38,11 @@ func NewTenantWriter(database *db.Postgres, logger logger.Interface) *TenantWrit
 func (w *TenantWriter) CreateTenant(ctx context.Context, id, name string) (result *base.Tenant, err error) {
 	ctx, span := tracer.Start(ctx, "tenant-writer.create-tenant")
 	defer span.End()
-
+	
 	var createdAt time.Time
-
+	
 	query := w.database.Builder.Insert(TenantsTable).Columns("id, name").Values(id, name).Suffix("RETURNING created_at").RunWith(w.database.DB)
-
+	
 	err = query.QueryRowContext(ctx).Scan(&createdAt)
 	if err != nil {
 		span.RecordError(err)
@@ -52,7 +52,7 @@ func (w *TenantWriter) CreateTenant(ctx context.Context, id, name string) (resul
 		}
 		return nil, errors.New(base.ErrorCode_ERROR_CODE_EXECUTION.String())
 	}
-
+	
 	return &base.Tenant{
 		Id:        id,
 		Name:      name,
@@ -64,10 +64,10 @@ func (w *TenantWriter) CreateTenant(ctx context.Context, id, name string) (resul
 func (w *TenantWriter) DeleteTenant(ctx context.Context, tenantID string) (result *base.Tenant, err error) {
 	ctx, span := tracer.Start(ctx, "tenant-writer.delete-tenant")
 	defer span.End()
-
+	
 	var name string
 	var createdAt time.Time
-
+	
 	query := w.database.Builder.Delete(TenantsTable).Where(squirrel.Eq{"id": tenantID}).Suffix("RETURNING name, created_at").RunWith(w.database.DB)
 	err = query.QueryRowContext(ctx).Scan(&name, &createdAt)
 	if err != nil {
@@ -75,7 +75,7 @@ func (w *TenantWriter) DeleteTenant(ctx context.Context, tenantID string) (resul
 		span.SetStatus(otelCodes.Error, err.Error())
 		return nil, errors.New(base.ErrorCode_ERROR_CODE_EXECUTION.String())
 	}
-
+	
 	return &base.Tenant{
 		Id:        tenantID,
 		Name:      name,

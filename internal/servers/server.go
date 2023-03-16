@@ -8,9 +8,9 @@ import (
 	"net/http"
 	"net/http/pprof"
 	"time"
-
+	
 	grpcAuth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
-
+	
 	grpcRecovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	grpcValidator "github.com/grpc-ecosystem/go-grpc-middleware/validator"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -22,16 +22,16 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/encoding/protojson"
-
+	
 	health "google.golang.org/grpc/health/grpc_health_v1"
-
-	"github.com/Permify/permify/internal/authn/oidc"
-	"github.com/Permify/permify/internal/authn/preshared"
-	"github.com/Permify/permify/internal/config"
-	"github.com/Permify/permify/internal/servers/middleware"
-	"github.com/Permify/permify/internal/services"
-	"github.com/Permify/permify/pkg/logger"
-	grpcV1 "github.com/Permify/permify/pkg/pb/base/v1"
+	
+	"github.com/adminium/permify/internal/authn/oidc"
+	"github.com/adminium/permify/internal/authn/preshared"
+	"github.com/adminium/permify/internal/config"
+	"github.com/adminium/permify/internal/servers/middleware"
+	"github.com/adminium/permify/internal/services"
+	"github.com/adminium/permify/pkg/logger"
+	grpcV1 "github.com/adminium/permify/pkg/pb/base/v1"
 )
 
 var tracer = otel.Tracer("servers")
@@ -47,17 +47,17 @@ type ServiceContainer struct {
 // Run -
 func (s *ServiceContainer) Run(ctx context.Context, cfg *config.Server, authentication *config.Authn, profiler *config.Profiler, l *logger.Logger) error {
 	var err error
-
+	
 	unaryInterceptors := []grpc.UnaryServerInterceptor{
 		grpcValidator.UnaryServerInterceptor(),
 		grpcRecovery.UnaryServerInterceptor(),
 	}
-
+	
 	streamingInterceptors := []grpc.StreamServerInterceptor{
 		grpcValidator.StreamServerInterceptor(),
 		grpcRecovery.StreamServerInterceptor(),
 	}
-
+	
 	if authentication != nil && authentication.Enabled {
 		switch authentication.Method {
 		case "preshared":
@@ -80,12 +80,12 @@ func (s *ServiceContainer) Run(ctx context.Context, cfg *config.Server, authenti
 			return fmt.Errorf("unkown authentication method: '%s'", authentication.Method)
 		}
 	}
-
+	
 	opts := []grpc.ServerOption{
 		grpc.ChainUnaryInterceptor(unaryInterceptors...),
 		grpc.ChainStreamInterceptor(streamingInterceptors...),
 	}
-
+	
 	if cfg.GRPC.TLSConfig.Enabled {
 		var c credentials.TransportCredentials
 		c, err = credentials.NewServerTLSFromFile(cfg.GRPC.TLSConfig.CertPath, cfg.GRPC.TLSConfig.KeyPath)
@@ -94,7 +94,7 @@ func (s *ServiceContainer) Run(ctx context.Context, cfg *config.Server, authenti
 		}
 		opts = append(opts, grpc.Creds(c))
 	}
-
+	
 	grpcServer := grpc.NewServer(opts...)
 	grpcV1.RegisterPermissionServer(grpcServer, NewPermissionServer(s.PermissionService, l))
 	grpcV1.RegisterSchemaServer(grpcServer, NewSchemaServer(s.SchemaService, l))
@@ -103,7 +103,7 @@ func (s *ServiceContainer) Run(ctx context.Context, cfg *config.Server, authenti
 	health.RegisterHealthServer(grpcServer, NewHealthServer())
 	grpcV1.RegisterWelcomeServer(grpcServer, NewWelcomeServer())
 	reflection.Register(grpcServer)
-
+	
 	if profiler.Enabled {
 		mux := http.NewServeMux()
 		mux.HandleFunc("/debug/pprof/", pprof.Index)
@@ -111,10 +111,10 @@ func (s *ServiceContainer) Run(ctx context.Context, cfg *config.Server, authenti
 		mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
 		mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
 		mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
-
+		
 		go func() {
 			l.Info(fmt.Sprintf("🚀 profiler server successfully started: %s", profiler.Port))
-
+			
 			if err = http.ListenAndServe(":"+profiler.Port, mux); err != nil {
 				if errors.Is(err, http.ErrServerClosed) {
 					l.Fatal("failed to start profiler", err)
@@ -122,21 +122,21 @@ func (s *ServiceContainer) Run(ctx context.Context, cfg *config.Server, authenti
 			}
 		}()
 	}
-
+	
 	var lis net.Listener
 	lis, err = net.Listen("tcp", ":"+cfg.GRPC.Port)
 	if err != nil {
 		return err
 	}
-
+	
 	go func() {
 		if err = grpcServer.Serve(lis); err != nil {
 			l.Error("failed to start grpc server", err)
 		}
 	}()
-
+	
 	l.Info(fmt.Sprintf("🚀 grpc server successfully started: %s", cfg.GRPC.Port))
-
+	
 	var httpServer *http.Server
 	if cfg.HTTP.Enabled {
 		options := []grpc.DialOption{
@@ -152,16 +152,16 @@ func (s *ServiceContainer) Run(ctx context.Context, cfg *config.Server, authenti
 		} else {
 			options = append(options, grpc.WithTransportCredentials(insecure.NewCredentials()))
 		}
-
+		
 		timeoutCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
 		defer cancel()
-
+		
 		conn, err := grpc.DialContext(timeoutCtx, ":"+cfg.GRPC.Port, options...)
 		if err != nil {
 			return err
 		}
 		defer conn.Close()
-
+		
 		healthClient := health.NewHealthClient(conn)
 		muxOpts := []runtime.ServeMuxOption{
 			runtime.WithHealthzEndpoint(healthClient),
@@ -177,9 +177,9 @@ func (s *ServiceContainer) Run(ctx context.Context, cfg *config.Server, authenti
 				},
 			}),
 		}
-
+		
 		mux := runtime.NewServeMux(muxOpts...)
-
+		
 		if err = grpcV1.RegisterPermissionHandler(ctx, mux, conn); err != nil {
 			return err
 		}
@@ -195,7 +195,7 @@ func (s *ServiceContainer) Run(ctx context.Context, cfg *config.Server, authenti
 		if err = grpcV1.RegisterWelcomeHandler(ctx, mux, conn); err != nil {
 			return err
 		}
-
+		
 		httpServer = &http.Server{
 			Addr: ":" + cfg.HTTP.Port,
 			Handler: cors.New(cors.Options{
@@ -209,7 +209,7 @@ func (s *ServiceContainer) Run(ctx context.Context, cfg *config.Server, authenti
 			}).Handler(mux),
 			ReadHeaderTimeout: 5 * time.Second,
 		}
-
+		
 		go func() {
 			var err error
 			if cfg.HTTP.TLSConfig.Enabled {
@@ -221,25 +221,25 @@ func (s *ServiceContainer) Run(ctx context.Context, cfg *config.Server, authenti
 				l.Error(err)
 			}
 		}()
-
+		
 		l.Info(fmt.Sprintf("🚀 http server successfully started: %s", cfg.HTTP.Port))
 	}
-
+	
 	<-ctx.Done()
-
+	
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-
+	
 	if httpServer != nil {
 		if err := httpServer.Shutdown(ctx); err != nil {
 			l.Error(err)
 			return err
 		}
 	}
-
+	
 	grpcServer.GracefulStop()
-
+	
 	l.Info("gracefully shutting down")
-
+	
 	return nil
 }

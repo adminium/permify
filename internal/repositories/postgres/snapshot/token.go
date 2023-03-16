@@ -3,11 +3,11 @@ package snapshot
 import (
 	"encoding/base64"
 	"encoding/binary"
-
+	
 	"github.com/jackc/pgtype"
-
-	"github.com/Permify/permify/internal/repositories/postgres/types"
-	"github.com/Permify/permify/pkg/token"
+	
+	"github.com/adminium/permify/internal/repositories/postgres/types"
+	"github.com/adminium/permify/pkg/token"
 )
 
 type (

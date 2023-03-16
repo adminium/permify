@@ -5,28 +5,28 @@ import (
 	"fmt"
 	"testing"
 	"time"
-
+	
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/grpc-ecosystem/go-grpc-middleware/util/metautils"
 	. "github.com/onsi/gomega"
-
-	"github.com/Permify/permify/internal/config"
+	
+	"github.com/adminium/permify/internal/config"
 )
 
 func Test_AuthenticateWithSigningMethods(t *testing.T) {
 	RegisterFailHandler(fail(t))
-
+	
 	clientId := "test-client"
 	listenAddress := "localhost:9999"
 	issuerURL := "http://" + listenAddress
-
+	
 	// Start oidc provider server
 	fakeOidcProvider, err := newfakeOidcProvider(issuerURL)
 	Expect(err).To(BeNil())
 	server, err := fakeHttpServer(listenAddress, fakeOidcProvider.ServeHTTP)
 	Expect(err).To(BeNil())
 	defer server.Close()
-
+	
 	tests := []struct {
 		name    string
 		method  jwt.SigningMethod
@@ -54,7 +54,7 @@ func Test_AuthenticateWithSigningMethods(t *testing.T) {
 			false,
 		},
 	}
-
+	
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			now := time.Now()
@@ -65,13 +65,13 @@ func Test_AuthenticateWithSigningMethods(t *testing.T) {
 				ExpiresAt: &jwt.NumericDate{Time: now.AddDate(1, 0, 0)},
 				IssuedAt:  &jwt.NumericDate{Time: now},
 			}
-
+			
 			// create signed token from oidc provider
 			unsignedToken := createUnsignedToken(claims, tt.method)
 			unsignedToken.Header["kid"] = fakeOidcProvider.keyIds[tt.method]
 			idToken, err := fakeOidcProvider.SignIDToken(unsignedToken)
 			Expect(err).To(BeNil())
-
+			
 			// create oidc authenticator
 			ctx := context.Background()
 			auth, err := NewOidcAuthn(ctx, config.Oidc{
@@ -79,7 +79,7 @@ func Test_AuthenticateWithSigningMethods(t *testing.T) {
 				Issuer:   issuerURL,
 			})
 			Expect(err).To(BeNil())
-
+			
 			// authenticate
 			niceMd := make(metautils.NiceMD)
 			niceMd.Set("authorization", "Bearer "+idToken)
@@ -91,18 +91,18 @@ func Test_AuthenticateWithSigningMethods(t *testing.T) {
 
 func Test_AuthenticateClaims(t *testing.T) {
 	RegisterFailHandler(fail(t))
-
+	
 	clientId := "test-client"
 	listenAddress := "localhost:9999"
 	issuerURL := "http://" + listenAddress
-
+	
 	// Start oidc provider server
 	fakeOidcProvider, err := newfakeOidcProvider(issuerURL)
 	Expect(err).To(BeNil())
 	server, err := fakeHttpServer(listenAddress, fakeOidcProvider.ServeHTTP)
 	Expect(err).To(BeNil())
 	defer server.Close()
-
+	
 	tests := []struct {
 		name          string
 		claimOverride *jwt.RegisteredClaims
@@ -149,7 +149,7 @@ func Test_AuthenticateClaims(t *testing.T) {
 			true,
 		},
 	}
-
+	
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			now := time.Now()
@@ -161,13 +161,13 @@ func Test_AuthenticateClaims(t *testing.T) {
 				IssuedAt:  &jwt.NumericDate{Time: now},
 			}
 			claimOverride(&claims, tt.claimOverride)
-
+			
 			// create signed token from oidc server with overridden claims
 			unsignedToken := createUnsignedToken(claims, jwt.SigningMethodRS256)
 			unsignedToken.Header["kid"] = fakeOidcProvider.keyIds[jwt.SigningMethodRS256]
 			idToken, err := fakeOidcProvider.SignIDToken(unsignedToken)
 			Expect(err).To(BeNil())
-
+			
 			// create oidc authenticator
 			ctx := context.Background()
 			auth, err := NewOidcAuthn(ctx, config.Oidc{
@@ -175,7 +175,7 @@ func Test_AuthenticateClaims(t *testing.T) {
 				Issuer:   issuerURL,
 			})
 			Expect(err).To(BeNil())
-
+			
 			// authenticate token
 			niceMd := make(metautils.NiceMD)
 			niceMd.Set("authorization", "Bearer "+idToken)
@@ -187,18 +187,18 @@ func Test_AuthenticateClaims(t *testing.T) {
 
 func Test_AuthenticateKeyIds(t *testing.T) {
 	RegisterFailHandler(fail(t))
-
+	
 	clientId := "test-client"
 	listenAddress := "localhost:9999"
 	issuerURL := "http://" + listenAddress
-
+	
 	// Start oidc provider server
 	fakeOidcProvider, err := newfakeOidcProvider(issuerURL)
 	Expect(err).To(BeNil())
 	server, err := fakeHttpServer(listenAddress, fakeOidcProvider.ServeHTTP)
 	Expect(err).To(BeNil())
 	defer server.Close()
-
+	
 	tests := []struct {
 		name     string
 		method   jwt.SigningMethod
@@ -237,7 +237,7 @@ func Test_AuthenticateKeyIds(t *testing.T) {
 			true,
 		},
 	}
-
+	
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			now := time.Now()
@@ -248,7 +248,7 @@ func Test_AuthenticateKeyIds(t *testing.T) {
 				ExpiresAt: &jwt.NumericDate{Time: now.AddDate(1, 0, 0)},
 				IssuedAt:  &jwt.NumericDate{Time: now},
 			}
-
+			
 			// create signed token from oidc provider possibly with kid in header
 			unsignedToken := createUnsignedToken(claims, tt.method)
 			if tt.addKeyId {
@@ -256,7 +256,7 @@ func Test_AuthenticateKeyIds(t *testing.T) {
 			}
 			idToken, err := fakeOidcProvider.SignIDToken(unsignedToken)
 			Expect(err).To(BeNil())
-
+			
 			// create authenticator
 			ctx := context.Background()
 			auth, err := NewOidcAuthn(ctx, config.Oidc{
@@ -264,7 +264,7 @@ func Test_AuthenticateKeyIds(t *testing.T) {
 				Issuer:   issuerURL,
 			})
 			Expect(err).To(BeNil())
-
+			
 			// authenticate
 			niceMd := make(metautils.NiceMD)
 			niceMd.Set("authorization", "Bearer "+idToken)

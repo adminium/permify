@@ -3,9 +3,9 @@ package utils
 import (
 	"github.com/hashicorp/go-memdb"
 	"golang.org/x/exp/slices"
-
-	"github.com/Permify/permify/internal/repositories"
-	base "github.com/Permify/permify/pkg/pb/base/v1"
+	
+	"github.com/adminium/permify/internal/repositories"
+	base "github.com/adminium/permify/pkg/pb/base/v1"
 )
 
 // FilterQuery - Filter relation tuples according to given filter

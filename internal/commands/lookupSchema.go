@@ -4,13 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-
+	
 	"golang.org/x/exp/slices"
-
+	
 	otelCodes "go.opentelemetry.io/otel/codes"
-
-	"github.com/Permify/permify/internal/repositories"
-	base "github.com/Permify/permify/pkg/pb/base/v1"
+	
+	"github.com/adminium/permify/internal/repositories"
+	base "github.com/adminium/permify/pkg/pb/base/v1"
 )
 
 // LookupSchemaCommand -
@@ -30,26 +30,26 @@ func NewLookupSchemaCommand(schemaReader repositories.SchemaReader) *LookupSchem
 func (command *LookupSchemaCommand) Execute(ctx context.Context, request *base.PermissionLookupSchemaRequest) (*base.PermissionLookupSchemaResponse, error) {
 	ctx, span := tracer.Start(ctx, "permissions.lookup-schema.execute")
 	defer span.End()
-
+	
 	var err error
-
+	
 	response := &base.PermissionLookupSchemaResponse{
 		ActionNames: []string{},
 	}
-
+	
 	if request.GetMetadata().GetSchemaVersion() == "" {
 		request.Metadata.SchemaVersion, err = command.schemaReader.HeadVersion(ctx, request.GetTenantId())
 		if err != nil {
 			return response, err
 		}
 	}
-
+	
 	var en *base.EntityDefinition
 	en, _, err = command.schemaReader.ReadSchemaDefinition(ctx, request.GetTenantId(), request.GetEntityType(), request.GetMetadata().GetSchemaVersion())
 	if err != nil {
 		return nil, err
 	}
-
+	
 	for _, action := range en.GetActions() {
 		var can bool
 		can, err = command.l(ctx, request, action.Child)
@@ -94,11 +94,11 @@ func (command *LookupSchemaCommand) l(ctx context.Context, request *base.Permiss
 	case *base.Child_Leaf:
 		fn = command.lookupLeaf(ctx, request, child.GetLeaf())
 	}
-
+	
 	if fn == nil {
 		return false, errors.New(base.ErrorCode_ERROR_CODE_UNDEFINED_CHILD_KIND.String())
 	}
-
+	
 	result := schemaLookupUnion(ctx, []SchemaLookupFunction{fn})
 	return result.Can, result.Err
 }
@@ -140,7 +140,7 @@ func (command *LookupSchemaCommand) setChild(ctx context.Context, request *base.
 			return schemaLookupFail(errors.New(base.ErrorCode_ERROR_CODE_UNDEFINED_CHILD_KIND.String()))
 		}
 	}
-
+	
 	return func(ctx context.Context, resultChan chan<- SchemaLookupDecision) {
 		resultChan <- combiner(ctx, functions)
 	}
@@ -163,15 +163,15 @@ func schemaLookupUnion(ctx context.Context, functions []SchemaLookupFunction) Sc
 	if len(functions) == 0 {
 		return sendSchemaLookupDecision(true, nil)
 	}
-
+	
 	lookupChan := make(chan SchemaLookupDecision, len(functions))
 	childCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
-
+	
 	for _, fn := range functions {
 		go fn(childCtx, lookupChan)
 	}
-
+	
 	for i := 0; i < len(functions); i++ {
 		select {
 		case result := <-lookupChan:
@@ -185,7 +185,7 @@ func schemaLookupUnion(ctx context.Context, functions []SchemaLookupFunction) Sc
 			return sendSchemaLookupDecision(false, errors.New(base.ErrorCode_ERROR_CODE_CANCELLED.String()))
 		}
 	}
-
+	
 	return sendSchemaLookupDecision(false, nil)
 }
 
@@ -194,15 +194,15 @@ func schemaLookupIntersection(ctx context.Context, functions []SchemaLookupFunct
 	if len(functions) == 0 {
 		return sendSchemaLookupDecision(true, nil)
 	}
-
+	
 	lookupChan := make(chan SchemaLookupDecision, len(functions))
 	childCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
-
+	
 	for _, fn := range functions {
 		go fn(childCtx, lookupChan)
 	}
-
+	
 	for i := 0; i < len(functions); i++ {
 		select {
 		case result := <-lookupChan:
@@ -216,7 +216,7 @@ func schemaLookupIntersection(ctx context.Context, functions []SchemaLookupFunct
 			return sendSchemaLookupDecision(false, errors.New(base.ErrorCode_ERROR_CODE_CANCELLED.String()))
 		}
 	}
-
+	
 	return sendSchemaLookupDecision(true, nil)
 }
 

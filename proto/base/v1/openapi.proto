@@ -1,7 +1,7 @@
 syntax = "proto3";
 package base.v1;
 
-option go_package = "github.com/Permify/permify/pkg/pb/base/v1";
+option go_package = "github.com/adminium/permify/pkg/pb/base/v1";
 
 import "protoc-gen-openapiv2/options/annotations.proto";
 
@@ -12,12 +12,12 @@ option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
     version: "v0.3.4";
     contact: {
       name: "API Support";
-      url: "https://github.com/Permify/permify/issues";
+      url: "https://github.com/adminium/permify/issues";
       email: "hello@permify.co";
     };
     license: {
       name: "GNU Affero General Public License v3.0";
-      url: "https://github.com/Permify/permify/blob/master/LICENSE";
+      url: "https://github.com/adminium/permify/blob/master/LICENSE";
     }
   };
   consumes: "application/json";

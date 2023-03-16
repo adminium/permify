@@ -26,10 +26,10 @@ brews:
     description: "Permify is an open-source authorization service & policy engine based on Google Zanzibar."
     download_strategy: CurlDownloadStrategy
     folder: Formula
-    homepage: "https://github.com/Permify/permify"
+    homepage: "https://github.com/adminium/permify"
     license: "GNU General Public License v3.0"
     custom_block: |
-      head "https://github.com/Permify/permify.git", :branch => "master"
+      head "https://github.com/adminium/permify.git", :branch => "master"
     install: |
         if !File.exists? "permify"
           system "go build --ldflags ./cmd/permify"
@@ -42,7 +42,7 @@ brews:
     commit_author:
       name: permify-bot
       email: hello@permify.co
-    url_template: "https://github.com/Permify/permify/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    url_template: "https://github.com/adminium/permify/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
 docker_manifests:
   -
     image_templates:

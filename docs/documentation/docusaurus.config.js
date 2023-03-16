@@ -65,7 +65,7 @@ const config = {
               position: 'right',
             },
             {
-              href: 'https://github.com/Permify/permify',
+              href: 'https://github.com/adminium/permify',
               position: 'right',
               className: 'header-github-link'
             },

@@ -93,7 +93,7 @@ If we use the above example schema validation file, after running `./permify val
 
 ![schema-validation](https://user-images.githubusercontent.com/34595361/207110538-9837b09d-26b4-409a-a309-a21f66e6677a.png)
 
-[permify-validate-action]: https://github.com/Permify/permify-validate-action
+[permify-validate-action]: https://github.com/adminium/permify-validate-action
 
 ## Need any help ?
 
